@@ -40,8 +40,9 @@ public class OI extends SubsystemBase {
     // This method will be called once per scheduler run
 
     // Check to see if driver said shoot!
+    // Right trigger
     double dValueRight = m_stick.getRawAxis(3);
- 
+
     if (dValueRight > 0.05) {
       this.shoot();
     }
@@ -52,7 +53,7 @@ public class OI extends SubsystemBase {
     bValueButton  = m_stick.getRawButton(1);
 
     if (bValueButton){
-      System.out.println("Green A Button");
+      // System.out.println("Green A Button");
       m_LEDrelay.set(true);
       System.out.println("DigitalOutput set to true");
 //      m_LEDrelay.set(Relay.Value.kForward);
@@ -60,13 +61,14 @@ public class OI extends SubsystemBase {
       this.capture();
     }
 
+
     // Blue X button
     bValueButton  = m_stick.getRawButton(3);
 
     if (bValueButton){
-      System.out.println("Blue X Button");
+      // System.out.println("Blue X Button");
       m_LEDrelay.set(false);
-      System.out.println("DigitalOutput set to false");
+      // System.out.println("DigitalOutput set to false");
 //      m_LEDrelay.set(Relay.Value.kOff);
 //      System.out.println("Relay set to kOff");
       this.capture();
@@ -76,7 +78,7 @@ public class OI extends SubsystemBase {
     bValueButton  = m_stick.getRawButton(4);
 
     if (bValueButton){
-      System.out.println("Yellow Y Button");
+     // System.out.println("Yellow Y Button");
   //    m_LEDrelay.set(Relay.Value.kOn);
   //    System.out.println("Relay set to kOn");
       this.capture();
@@ -86,7 +88,7 @@ public class OI extends SubsystemBase {
     bValueButton  = m_stick.getRawButton(2);
 
     if (bValueButton){
-      System.out.println("Red B Button");
+      // System.out.println("Red B Button");
   //    m_LEDrelay.set(Relay.Value.kReverse);
   //    System.out.println("Relay set to kReverse");
       this.capture();
@@ -108,27 +110,21 @@ public class OI extends SubsystemBase {
 
   // when the driver pushes the aim button
   private void aim() {
-    System.out.println("Aim!");
+    // System.out.println("Aim!");
     m_drive.SetTargeting(true);
- 
-
   }
-
 
   // when the driver pushes the shoot button
   private void shoot() {
-
-    System.out.println("Shoot!");
-    // extends the shooter (not the hood)
-    // bring shooter up to speed 
-    // tells indexer we are shooting
-    // tells intak we are shooting 
+    TheRobot.log("Driver Input says: Shooting!");
+    Robot r = TheRobot.getInstance();
+    r.m_shooter.shoot();
   }
 
   //when the driver pushes the A button
   private void capture() {
 
-    System.out.println("Capture!");
+    // System.out.println("Capture!");
     // extends intake
     // starts capture on intake
     // start capture om indexer
@@ -136,12 +132,13 @@ public class OI extends SubsystemBase {
     //when left stick is pushed up
   private void left() {
 
-    System.out.println("Left foward!");
+    // System.out.println("Left foward!");
   }
   //when right stick is pushed up
   private void right() {
 
-    System.out.println("Right foward!");
-
+    // System.out.println("Right foward!");
   }
+
+
 }
