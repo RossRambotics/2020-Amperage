@@ -88,17 +88,17 @@ public class Robot extends TimedRobot {
     m_CMDScheduler = CommandScheduler.getInstance();
 
     // initialize the subsystems
-    m_TestMotor = new CANSparkMax(11, MotorType.kBrushless);
+    m_TestMotor = new CANSparkMax(30, MotorType.kBrushless);
     final NetworkTableInstance networkTableInstance = NetworkTableInstance.create();
     networkTableInstance.startClient("10.32.1.105");
     // System.out.println("Network Tables Connected? " + Boolean.toString(networkTableInstance.isConnected()));
     m_visionTable = networkTableInstance.getTable("ContourTable");
     m_drive.SetVisionTable(m_visionTable);
     m_OI.SetDrive(m_drive);
-    m_indexerbottomMotor = new CANSparkMax(7, MotorType.kBrushless);
-    m_indexertopMotor = new CANSparkMax(8, MotorType.kBrushless);
-    m_leftMotor = new CANSparkMax(9, MotorType.kBrushless);
-    m_rightMotor = new CANSparkMax(10, MotorType.kBrushless);
+    m_indexerbottomMotor = new CANSparkMax(30, MotorType.kBrushless);
+    m_indexertopMotor = new CANSparkMax(30, MotorType.kBrushless);
+    m_leftMotor = new CANSparkMax(30, MotorType.kBrushless);
+    m_rightMotor = new CANSparkMax(30, MotorType.kBrushless);
     m_stick = new Joystick(0);
     m_leftEncoder = m_leftMotor.getEncoder();
     m_rightEncoder = m_rightMotor.getEncoder();

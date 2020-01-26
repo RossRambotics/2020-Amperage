@@ -48,6 +48,7 @@ public class Shoot extends CommandBase {
     // End the shoot command after 2 seconds
     if (r.m_CMDScheduler.timeSinceScheduled(this) > 2.0) {
       TheRobot.log("Shoot timeout hit... ending.");
+      m_finished = true;
     }
 
     

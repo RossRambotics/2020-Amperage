@@ -19,6 +19,8 @@ public class OI extends SubsystemBase {
   private final Joystick m_stick = new Joystick(0);
   private final DigitalOutput m_LEDrelay = new DigitalOutput(0);
   private Drive m_drive = null;
+  private int m_currentShot = 0;  // How many times have we finished shooting
+  private int m_nextShot = 0;     // The count of the next shot (used to prevent multiple simultaneous shots)
   
   /**
    * Creates a new OI.
@@ -44,7 +46,14 @@ public class OI extends SubsystemBase {
     double dValueRight = m_stick.getRawAxis(3);
 
     if (dValueRight > 0.05) {
-      this.shoot();
+      if (m_nextShot == m_currentShot) {
+        m_nextShot++;
+        this.shoot();
+      }
+    } else {
+      // When the trigger is release we have completed a shot
+      m_currentShot++;
+      this.shootStop();
     }
 
     // Check to see if driver said capture!
@@ -119,6 +128,13 @@ public class OI extends SubsystemBase {
     TheRobot.log("Driver Input says: Shooting!");
     Robot r = TheRobot.getInstance();
     r.m_shooter.shoot();
+  }
+
+  // when the driver release the shoot button
+  private void shootStop() {
+    TheRobot.log("Driver Inputs says: Stop Shoointg!");
+    Robot r = TheRobot.getInstance();
+    r.m_shooter.stop();
   }
 
   //when the driver pushes the A button
