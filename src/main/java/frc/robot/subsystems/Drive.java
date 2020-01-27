@@ -5,7 +5,7 @@
 /* the project.                                                               */
 /*----------------------------------------------------------------------------*/
 
-package frc.robot;
+package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj.Joystick;
@@ -36,6 +36,10 @@ public class Drive extends SubsystemBase {
     m_visionTable = n;
   }
 
+  public NetworkTable GetNetworkTable() {
+    return m_visionTable;
+  }
+
   private double m_deadzone = 0.05;
   private double m_maxPower = 1.00;
 
@@ -47,7 +51,7 @@ public class Drive extends SubsystemBase {
     // drive the robot with the joysticks
 
     //check if it says Left!
-    double dvalueLYAxis = -m_driverStick.getRawAxis(1);
+    double dvalueLYAxis = m_driverStick.getRawAxis(1);
     double dvalueRYAxis = -m_driverStick.getRawAxis(5);
 
     // enforce deadzone on joysticks
@@ -64,8 +68,8 @@ public class Drive extends SubsystemBase {
 
     if (false) {
 
-    System.out.println("Drive L: " + df3.format(dvalueLYAxis) + 
-                        " R: " + df3.format(dvalueRYAxis));
+    //System.out.println("Drive L: " + df3.format(dvalueLYAxis) + 
+    //                    " R: " + df3.format(dvalueRYAxis));
     }
 
     if (!m_bTargeting) {
@@ -81,8 +85,8 @@ public class Drive extends SubsystemBase {
     double dFrame = m_visionTable.getEntry("FrameCounter").getDouble(0);
 
     if (true) {
-    System.out.println("Frame: " +df3.format(dFrame) +
-                      " TargetAngle: " + df3.format(dDirection));
+    //System.out.println("Frame: " +df3.format(dFrame) +
+   //                   " TargetAngle: " + df3.format(dDirection));
     }
 
     if (l == 0 && r == 0) {
