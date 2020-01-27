@@ -5,7 +5,7 @@
 /* the project.                                                               */
 /*----------------------------------------------------------------------------*/
 
-package frc.robot;
+package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -15,19 +15,17 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANEncoder;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
-import frc.robot.commands.Shoot;
+import frc.robot.TheRobot;
+import frc.robot.Robot;
 
 
 public class Shooter extends SubsystemBase {
   private CANSparkMax m_motor1 = null;
   private CANSparkMax m_motor2 = null;
   private CANEncoder m_encoder1 = null;
-  private CANEncoder m_encoder2 = null;
-  private double m_RPM_motor1 = 0;
-  private double m_RPM_motor2 = 0;
-  private double m_RPM_target = 5000;
 
-  private Shoot m_shootCMD = null;
+  private double m_RPM_shooter = 0;
+  private double m_RPM_target = 5000;
 
   /**
    * Creates a new Shooter.
@@ -36,8 +34,9 @@ public class Shooter extends SubsystemBase {
     // TODO fix the CAN id of the motors
     m_motor1 =  new CANSparkMax(30, MotorType.kBrushless);
     m_motor2 =  new CANSparkMax(30, MotorType.kBrushless);
+    m_motor2.follow(m_motor1, true);
+
     m_encoder1 = m_motor1.getEncoder();
-    m_encoder2 = m_motor2.getEncoder();
   }
 
   @Override
@@ -45,34 +44,28 @@ public class Shooter extends SubsystemBase {
     // This method will be called once per scheduler run
 
     // Get the RPM of the motors
-    m_RPM_motor1 = Math.abs(m_encoder1.getVelocity());
-    m_RPM_motor2 = Math.abs(m_encoder2.getVelocity());
+    m_RPM_shooter = Math.abs(m_encoder1.getVelocity());
 
     // Output to dashboard
-    SmartDashboard.putNumber("Shooter Motor 1 RPM", m_RPM_motor1);
-    SmartDashboard.putNumber("Shooter Motor 2 RPM", m_RPM_motor2);
-    SmartDashboard.putNumber("Shooter Motor Ave RPM", (m_RPM_motor1 + m_RPM_motor2)/2.0);
-    SmartDashboard.putBoolean("Shooter Active", (m_shootCMD != null));
+    SmartDashboard.putNumber("Shooter Current RPM", m_RPM_shooter);
     SmartDashboard.putNumber("Shooter Target RPM", m_RPM_target);
   }
 
   //shoots the balls 
   public void shoot() {
+    Robot r = TheRobot.getInstance();
+ 
+    // get distance to target
+    double d = r.m_powerPowerTargeter.getDistance();
 
-    // If there is a prior shooting command ignore because we are already shooting!
-    if (m_shootCMD != null) {
-      // Check to see if we are done shooting
-      if (m_shootCMD.isFinished()) {
-        m_shootCMD = null;
-      }
-      // continue current shoot request
-      // OI code should prevent us from ever getting here
-      TheRobot.log("UNEXPECTED: shooter was told to shoot while it was already shooting.");
-      return;
+    // tell shooter to come up to target speed based on distance
+  
+    if (r.m_shooter.ready(d)) {
+      // start the indexer
+      r.m_indexer.shoot();
     } else {
-      // create new shoot command
-      m_shootCMD = new Shoot();
-      TheRobot.getInstance().m_CMDScheduler.schedule(m_shootCMD);
+      // stop the indexer
+      r.m_indexer.stop();
     }
   }
 
@@ -121,7 +114,7 @@ public class Shooter extends SubsystemBase {
     // Get Motor RPMs
     // TODO check default target speed!
     double actualSpeed = 5000;
-    actualSpeed = (m_RPM_motor1 + m_RPM_motor2) / 2.0;
+    actualSpeed = m_RPM_shooter;
 
     // See if motor RPM are within range tolerance
     double range = 200;
@@ -130,7 +123,6 @@ public class Shooter extends SubsystemBase {
     } else {
       // TODO adjust speed
       m_motor1.set(maxPower);
-      m_motor2.set(-maxPower);
     }
 
     

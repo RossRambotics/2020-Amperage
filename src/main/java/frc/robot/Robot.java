@@ -9,6 +9,8 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
 import java.io.*;
@@ -21,17 +23,18 @@ import com.revrobotics.CANEncoder;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.wpilibj.Joystick;
 
-
 // ultra sonic snsor classes
 import edu.wpi.first.wpilibj.AnalogInput;
 
 // add subsystems
-import frc.robot.Climber;
-import frc.robot.ControlPanel;
-import frc.robot.Drive;
-import frc.robot.Indexer;
-import frc.robot.Intake;
-import frc.robot.Shooter;
+import frc.robot.subsystems.Climber;
+import frc.robot.subsystems.ControlPanel;
+import frc.robot.subsystems.Drive;
+import frc.robot.subsystems.Indexer;
+import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Shooter;
+import frc.robot.subsystems.PowerPortTargeter;
+import frc.robot.commands.Shoot;
 
 // network tables
 import edu.wpi.first.networktables.NetworkTable;
@@ -46,6 +49,9 @@ import edu.wpi.first.networktables.NetworkTableInstance;
  * directory.
  */
 public class Robot extends TimedRobot {
+  private Command m_autonomousCommand = null;
+  private RobotContainer m_robotContainer = null;
+
   // create the subsystems
   public OI m_OI = new OI();
   public Climber m_climber = new Climber();
@@ -74,6 +80,7 @@ public class Robot extends TimedRobot {
   // network table
   private NetworkTable m_visionTable = null;
 
+
   /**
    * This function is run when the robot is first started up and should be used
    * for any initialization code.
@@ -81,6 +88,8 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() 
   {
+    m_robotContainer = new RobotContainer();
+
     // Setup the singleton for easy access to the robot and subsystems
     TheRobot.SetInstance(this);
 
@@ -103,6 +112,8 @@ public class Robot extends TimedRobot {
     m_leftEncoder = m_leftMotor.getEncoder();
     m_rightEncoder = m_rightMotor.getEncoder();
 
+    // add commands to Dashboard
+    SmartDashboard.putData("Shoot!", new Shoot());
     
   }
 
@@ -221,4 +232,22 @@ public class Robot extends TimedRobot {
   @Override
   public void testPeriodic() {
   }
+
+  /**
+   * This function is called once each time the robot enters Disabled mode.
+   */
+  @Override
+  public void disabledInit() {
+  }
+
+  @Override
+  public void disabledPeriodic() {
+  }
+
+  @Override
+  public void testInit() {
+    // Cancels all running commands at the start of test mode.
+    CommandScheduler.getInstance().cancelAll();
+  }
+
 }

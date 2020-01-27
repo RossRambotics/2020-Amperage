@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.DigitalOutput;
 import edu.wpi.first.wpilibj.Relay;
 
+import frc.robot.subsystems.Drive;
 
 
 
@@ -43,6 +44,8 @@ public class OI extends SubsystemBase {
 
     // Check to see if driver said shoot!
     // Right trigger
+    /*  ---- Moved into Robot Container ---
+    // TODO delete when done testing
     double dValueRight = m_stick.getRawAxis(3);
 
     if (dValueRight > 0.05) {
@@ -55,6 +58,7 @@ public class OI extends SubsystemBase {
       m_currentShot++;
       this.shootStop();
     }
+    */
 
     // Check to see if driver said capture!
     // Green A button

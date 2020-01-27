@@ -5,7 +5,7 @@
 /* the project.                                                               */
 /*----------------------------------------------------------------------------*/
 
-package frc.robot;
+package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -26,6 +26,7 @@ public class Indexer extends SubsystemBase {
     // TODO fix the CAN id of the motors
     m_bottomMotor =  new CANSparkMax(30, MotorType.kBrushless);
     m_topMotor =  new CANSparkMax(30, MotorType.kBrushless);
+    
   }
 
   @Override

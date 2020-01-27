@@ -31,27 +31,7 @@ public class Shoot extends CommandBase {
   @Override
   public void execute() {
     Robot r = TheRobot.getInstance();
-    
-    // get distance to target
-    double d = r.m_powerPowerTargeter.getDistance();
-
-    // tell shooter to come up to target speed based on distance
-  
-    if (r.m_shooter.ready(d)) {
-      // start the indexer
-      r.m_indexer.shoot();
-    } else {
-      // stop the indexer
-      r.m_indexer.stop();
-    }
-
-    // End the shoot command after 2 seconds
-    if (r.m_CMDScheduler.timeSinceScheduled(this) > 2.0) {
-      TheRobot.log("Shoot timeout hit... ending.");
-      m_finished = true;
-    }
-
-    
+    r.m_shooter.shoot();
   }
 
   // Called once the command ends or is interrupted.
