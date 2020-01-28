@@ -38,8 +38,8 @@ public class Shooter extends SubsystemBase {
   public Shooter() {
     // TODO fix the CAN id of the motors
     // setup motors
-    m_motor1 =  new CANSparkMax(30, MotorType.kBrushless);
-    m_motor2 =  new CANSparkMax(30, MotorType.kBrushless);
+    m_motor1 =  new CANSparkMax(10, MotorType.kBrushless);
+    m_motor2 =  new CANSparkMax(9, MotorType.kBrushless);
     m_motor2.follow(m_motor1, true);
 
     m_encoder1 = m_motor1.getEncoder();
@@ -117,10 +117,10 @@ public class Shooter extends SubsystemBase {
   
     if (r.m_shooter.ready(d)) {
       // start the indexer
-      r.m_indexer.shoot();
+      //r.m_indexer.shoot();
     } else {
       // stop the indexer
-      r.m_indexer.stop();
+      //r.m_indexer.stop();
     }
   }
 
@@ -149,11 +149,10 @@ public class Shooter extends SubsystemBase {
     public void stop() {
       // stops the shooter motors
       m_motor1.set(0);
-      m_motor2.set(0);
 
       // also make sure the indexer stops
       Robot r = TheRobot.getInstance();
-      r.m_indexer.stop();
+      //r.m_indexer.stop();
     }
 
 
@@ -161,13 +160,14 @@ public class Shooter extends SubsystemBase {
   // if distance is zero takes shooter to default speed
   // returns false if the shooter is not at target speed
   public boolean ready(double distance) {
-    m_RPM_target = 500;  // default target speed
+    m_RPM_target = 5000;  // default target speed
     double maxPower = 0.5;      // default maximum power
 
     // TODO lookup target speed based on distance
 
     // set the PID Controller to hit the RPM
     m_pidController.setReference(m_RPM_target, ControlType.kVelocity);
+    TheRobot.log("Shooter ready RPM_target:" + TheRobot.toString(m_RPM_target));
 
     // See if motor RPM are within range tolerance
     double range = 200;
