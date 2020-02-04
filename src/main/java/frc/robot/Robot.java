@@ -88,6 +88,7 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() 
   {
+    TheRobot.log("robotInit.");
     m_robotContainer = new RobotContainer();
 
     // Setup the singleton for easy access to the robot and subsystems
@@ -99,7 +100,7 @@ public class Robot extends TimedRobot {
     // initialize the subsystems
     m_TestMotor = new CANSparkMax(30, MotorType.kBrushless);
     final NetworkTableInstance networkTableInstance = NetworkTableInstance.create();
-    networkTableInstance.startClient("10.32.1.105");
+    //networkTableInstance.startClient("10.32.1.105");
     // System.out.println("Network Tables Connected? " + Boolean.toString(networkTableInstance.isConnected()));
     m_visionTable = networkTableInstance.getTable("ContourTable");
     m_drive.SetVisionTable(m_visionTable);

@@ -22,32 +22,38 @@ import frc.robot.helper.ShooterValueSet;
 import frc.robot.Robot;
 
 
-public class Shooter extends SubsystemBase {
-  private CANSparkMax m_motor1 = null;
-  private CANSparkMax m_motor2 = null;
-  private CANEncoder m_encoder1 = null;
+public class Hood extends SubsystemBase {
+  private CANSparkMax m_motorHood = null;
+  private CANEncoder m_encoderHood = null;
   private CANPIDController m_pidController = null;
 
   private ShooterLookUp m_lookUpTable = null; // look up table for shooter values
 
-  private double m_RPM_shooter = 0;
-  private double m_RPM_target = 5000;
+  private boolean m_extended = false;
+
+  private double m_position_hood = 0;
+  private double m_position_target = 5000;
 
   private double m_pid_kP, m_pid_kI, m_pid_kD, m_pid_kIz, m_pid_kFF;
   private double m_pid_kMaxOutput, m_pid_kMinOutput, m_pid_maxRPM;
 
+  // 55/18 --- ratio of the 2 sprockets
+  // * 4   --- 4:1 gear box
+  // / 360 --- degrees per rotation of the hood
+  private static final double kRotationsPerDegree = ((55 / 18) * 4) / 360; 
+
   /**
    * Creates a new Shooter.
    */
-  public Shooter() {
+  public Hood() {
     // TODO fix the CAN id of the motors
-    // setup motors
-    m_motor1 =  new CANSparkMax(2, MotorType.kBrushless);
-    m_motor2 =  new CANSparkMax(1, MotorType.kBrushless);
-    m_motor2.follow(m_motor1, true);
+    // setup motor
+    m_motorHood =  new CANSparkMax(55, MotorType.kBrushless);
+    m_motorHood.restoreFactoryDefaults();
 
-    m_encoder1 = m_motor1.getEncoder();
-    m_pidController = m_motor1.getPIDController();
+    m_encoderHood = m_motorHood.getEncoder();
+    m_encoderHood.setPosition(0);
+    m_pidController = m_motorHood.getPIDController();
 
     // PID coefficients
     m_pid_kP = 5e-5; 
@@ -70,13 +76,13 @@ public class Shooter extends SubsystemBase {
     m_lookUpTable = new ShooterLookUp();
 
     // display PID coefficients on SmartDashboard
-    SmartDashboard.putNumber("Shooter P Gain", m_pid_kP);
-    SmartDashboard.putNumber("Shooter I Gain", m_pid_kI);
-    SmartDashboard.putNumber("Shooter D Gain", m_pid_kD);
-    SmartDashboard.putNumber("Shooter I Zone", m_pid_kIz);
-    SmartDashboard.putNumber("Shooter Feed Forward", m_pid_kFF);
-    SmartDashboard.putNumber("Shooter Max Output", m_pid_kMaxOutput);
-    SmartDashboard.putNumber("Shooter Min Output", m_pid_kMinOutput);
+    SmartDashboard.putNumber("Hood P Gain", m_pid_kP);
+    SmartDashboard.putNumber("Hood I Gain", m_pid_kI);
+    SmartDashboard.putNumber("Hood D Gain", m_pid_kD);
+    SmartDashboard.putNumber("Hood I Zone", m_pid_kIz);
+    SmartDashboard.putNumber("Hood Feed Forward", m_pid_kFF);
+    SmartDashboard.putNumber("Hood Max Output", m_pid_kMaxOutput);
+    SmartDashboard.putNumber("Hood Min Output", m_pid_kMinOutput);
 
   }
 
@@ -85,13 +91,13 @@ public class Shooter extends SubsystemBase {
     // This method will be called once per scheduler run
 
     // read PID coefficients from SmartDashboard
-    double p = SmartDashboard.getNumber("Shooter P Gain", 0);
-    double i = SmartDashboard.getNumber("Shooter I Gain", 0);
-    double d = SmartDashboard.getNumber("Shooter D Gain", 0);
-    double iz = SmartDashboard.getNumber("Shooter I Zone", 0);
-    double ff = SmartDashboard.getNumber("Shooter Feed Forward", 0);
-    double max = SmartDashboard.getNumber("Shooter Max Output", 0);
-    double min = SmartDashboard.getNumber("Shooter Min Output", 0);
+    double p = SmartDashboard.getNumber("Hood P Gain", 0);
+    double i = SmartDashboard.getNumber("Hood I Gain", 0);
+    double d = SmartDashboard.getNumber("Hood D Gain", 0);
+    double iz = SmartDashboard.getNumber("Hood I Zone", 0);
+    double ff = SmartDashboard.getNumber("Hood Feed Forward", 0);
+    double max = SmartDashboard.getNumber("Hood Max Output", 0);
+    double min = SmartDashboard.getNumber("Hood Min Output", 0);
 
     // if PID coefficients on SmartDashboard have changed, write new values to controller
     if((p !=  m_pid_kP)) { m_pidController.setP(p);  m_pid_kP = p; }
@@ -104,12 +110,21 @@ public class Shooter extends SubsystemBase {
       m_pid_kMinOutput = min;  m_pid_kMaxOutput = max; 
     }
 
-    // Get the RPM of the motors
-    m_RPM_shooter = Math.abs(m_encoder1.getVelocity());
+    if (m_extended == true) {
+      ShooterValueSet m_values = m_lookUpTable.getCurrentValues(false);
+      m_position_target = m_values.hoodAngle * Hood.kRotationsPerDegree;  
+    } else {
+      m_position_target = 0;
+    }
+
+    m_pidController.setReference(m_position_target, ControlType.kPosition);
+
+    // Get the position of the hood
+    m_position_hood = Math.abs(m_encoderHood.getPosition());
 
     // Output to dashboard
-    SmartDashboard.putNumber("Shooter Current RPM", m_RPM_shooter);
-    SmartDashboard.putNumber("Shooter Target RPM", m_RPM_target);
+    SmartDashboard.putNumber("Hood Current Position", m_position_hood);
+    SmartDashboard.putNumber("Hood Target Position", m_position_target);
   }
 
   //shoots the balls 
@@ -142,6 +157,8 @@ public class Shooter extends SubsystemBase {
     //returns false if not retracted
     //returns true if retracted
     public boolean retract() {
+      m_extended = false;
+      m_position_target = 0;
       return false;
     }
     
@@ -149,13 +166,14 @@ public class Shooter extends SubsystemBase {
     //returns false if not exteneded
     //returns true if exteneded
     public boolean extend() {
+      m_extended = true;
       return false;
     
     }
 
     public void stop() {
       // stops the shooter motors
-      m_motor1.set(0);
+      m_motorHood.set(0);
 
       // also make sure the indexer stops
       Robot r = TheRobot.getInstance();
@@ -164,19 +182,21 @@ public class Shooter extends SubsystemBase {
 
 
   // returns true if the shooter is up-to-speed for the target distance
-  // if distance is zero takes shooter to default speed
-  // returns false if the shooter is not at target speed
+  // if distance is zero takes hood to default position
+  // returns false if the hood is not at target position
   public boolean ready(ShooterValueSet m_Values) {
-    // set the target RPM
-    m_RPM_target = m_Values.shooterRPM;
+    m_position_target = m_Values.hoodAngle;  // default target speed
+    double maxPower = 0.5;      // default maximum power
 
-    // set the PID Controller to hit the RPM
-    m_pidController.setReference(m_RPM_target, ControlType.kVelocity);
-    TheRobot.log("Shooter ready RPM_target:" + TheRobot.toString(m_RPM_target));
+    // TODO lookup target speed based on distance
 
-    // See if motor RPM are within range tolerance
-    double range = 200;
-    if (Math.abs(m_RPM_target - m_RPM_shooter) < range) {
+    // set the PID Controller to hit the position
+    m_pidController.setReference(m_position_target, ControlType.kPosition);
+    TheRobot.log("Shooter ready RPM_target:" + TheRobot.toString(m_position_target));
+
+    // See if motor hood are within range tolerance
+    double range = 2;
+    if (Math.abs(m_position_target - m_position_hood) < range) {
       return true;
     } 
     

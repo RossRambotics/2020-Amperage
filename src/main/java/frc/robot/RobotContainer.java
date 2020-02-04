@@ -33,6 +33,7 @@ public class RobotContainer {
    */
   public RobotContainer() {
     // Configure the button bindings
+    TheRobot.log("RobotContainer Created.");
     configureButtonBindings();
   }
 
@@ -46,7 +47,7 @@ public class RobotContainer {
 
     // setup the shooter using the right trigger
     JoystickButton rightTrigger = new JoystickAnalogButton(m_Joystick1, 3);
-    rightTrigger.whenHeld(new frc.robot.commands.Shoot().withTimeout(2.0));
+    rightTrigger.whenHeld(new frc.robot.commands.Shoot().withTimeout(5.0));
 
 
 

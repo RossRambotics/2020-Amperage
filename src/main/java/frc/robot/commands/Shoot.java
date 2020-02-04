@@ -37,6 +37,11 @@ public class Shoot extends CommandBase {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
+    if (interrupted) {
+      TheRobot.log("Shoot interrupted...");
+    } else {
+      TheRobot.log("Shoot ended...");
+    }
     Robot r = TheRobot.getInstance();
     r.m_shooter.stop();
   }
