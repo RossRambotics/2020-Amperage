@@ -20,8 +20,8 @@ import edu.wpi.first.networktables.NetworkTable;
 public class Drive extends SubsystemBase {
   private  Joystick m_driverStick = null;
   private static DecimalFormat df3 = new DecimalFormat("#.###");
-  private final TalonSRX m_leftMotor = new TalonSRX(1);
-  private final TalonSRX m_rightMotor = new TalonSRX(2);
+  private final TalonSRX m_leftMotor = new TalonSRX(21);
+  private final TalonSRX m_rightMotor = new TalonSRX(22);
   private boolean m_bTargeting = false;
   private NetworkTable m_visionTable = null;
 
