@@ -118,15 +118,13 @@ public class Shooter extends SubsystemBase {
   public void shoot() {
     Robot r = TheRobot.getInstance();
 
+    // extend the hood
     r.m_hood.extend();
  
     // get distance to target
-    double d = r.m_powerPowerTargeter.getDistance();
-    //ShooterValueSet m_values = m_lookUpTable.getCurrentValues(false);
-    ShooterValueSet m_values = new ShooterValueSet(45.0, 45.0);
-
-    // tell shooter to come up to target speed based on distance
-  
+    ShooterValueSet m_values = m_lookUpTable.getCurrentValues(false);
+    
+    // tell shooter to come up to target speed based on distance  
     if (r.m_shooter.ready(m_values)) {
       // start the indexer
       //r.m_indexer.shoot();
@@ -142,22 +140,7 @@ public class Shooter extends SubsystemBase {
     public boolean clear() {
       return false;
     }
-
-    //retracts the hood
-    //returns false if not retracted
-    //returns true if retracted
-    public boolean retract() {
-      return false;
-    }
     
-     //extends the hood
-    //returns false if not exteneded
-    //returns true if exteneded
-    public boolean extend() {
-      return false;
-    
-    }
-
     public void stop() {
       // stops the shooter motors
       m_motor1.set(0);
@@ -165,6 +148,9 @@ public class Shooter extends SubsystemBase {
       // also make sure the indexer stops
       Robot r = TheRobot.getInstance();
       //r.m_indexer.stop();
+
+      // retract the hood
+      r.m_hood.retract();
     }
 
 
