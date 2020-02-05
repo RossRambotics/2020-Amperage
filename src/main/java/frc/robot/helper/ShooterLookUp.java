@@ -1,5 +1,8 @@
 package frc.robot.helper;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -12,13 +15,16 @@ public class ShooterLookUp // changes distance to speed and hood angle
     private NetworkTableInstance ntInst = null;
     private NetworkTable ntTble = null;
     private Map<Double, ShooterValueSet> valueTable = null; // table that assocaited distance to hood and speed values
-    
+    private List<Double> keyArray = null;
+
     public ShooterLookUp()
     {
         ntInst = NetworkTableInstance.getDefault();
         ntTble = ntInst.getTable("ContourTable"); // gets the networktable where the target information is stored
-        ntTble.getEntry("TargetDistanceTest").setDouble(0);
+        ntTble.getEntry("TargetDistanceTest").setDouble(3.5);
 
+        keyArray = new ArrayList<Double>();
+        valueTable = new HashMap<Double, ShooterValueSet>();
 
         fillTableVaules();
     }
@@ -37,12 +43,13 @@ public class ShooterLookUp // changes distance to speed and hood angle
     private void addTableValue(Double Key, Double HoodAngle, Double ShooterSpeed) // appedns a set of values to the look up table system
     {
         valueTable.put(Key, new ShooterValueSet(HoodAngle, ShooterSpeed));
+
     }
 
     public ShooterValueSet getCurrentValues(Boolean Interpolate) // gets the hood and shooter speed values; interpolate ~ if true finds values between two existing
     {
         //-- remove line below & comment when value table is complete Double distanceFromTarget = ntTble.getEntry("TargetDistance").getDouble(0);
-        Double distanceFromTarget = ntTble.getEntry("TargetDistanceTest").getDouble(0);
+        Double distanceFromTarget = ntTble.getEntry("TargetDistanceTest").getDouble(3.5);
 
 
         if(Interpolate){
@@ -71,8 +78,6 @@ public class ShooterLookUp // changes distance to speed and hood angle
 
     private ShooterValueKey findClosestKey(Double Distance)
     {
-        Set<Double> keys = valueTable.keySet(); // gets all valid keys for the value table
-        Double[] keyArray = (Double[]) keys.toArray();
         ShooterValueKey closestKey = new ShooterValueKey(0.0, -1.0); // the keys that is the closest to the distance
 
         for(Double key: keyArray) // goes through each key and find the differnce between the key and distance
@@ -89,8 +94,6 @@ public class ShooterLookUp // changes distance to speed and hood angle
 
     private ShooterValueKey findClosestPostiveKey(Double Distance) // key is greater than distance
     {
-        Set<Double> keys = valueTable.keySet(); // gets all valid keys for the value table
-        Double[] keyArray = (Double[]) keys.toArray();
         ShooterValueKey closestKey = new ShooterValueKey(0.0, -1.0); // the keys that is the closest to the distance
 
         for(Double key: keyArray) // goes through each key and find the differnce between the key and distance
@@ -107,8 +110,6 @@ public class ShooterLookUp // changes distance to speed and hood angle
     
     private ShooterValueKey findClosestNegativeKey(Double Distance) // key is less than distance
     {
-        Set<Double> keys = valueTable.keySet(); // gets all valid keys for the value table
-        Double[] keyArray = (Double[]) keys.toArray();
         ShooterValueKey closestKey = new ShooterValueKey(0.0, -1.0); // the keys that is the closest to the distance
 
         for(Double key: keyArray) // goes through each key and find the differnce between the key and distance
