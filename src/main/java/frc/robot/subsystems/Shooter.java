@@ -45,6 +45,8 @@ public class Shooter extends SubsystemBase {
     m_motor1 =  new CANSparkMax(2, MotorType.kBrushless);
     m_motor2 =  new CANSparkMax(1, MotorType.kBrushless);
     m_motor2.follow(m_motor1, true);
+    m_motor1.setSmartCurrentLimit(20, 5500);  // limit motor to 20A & 5500 RPM
+    m_motor2.setSmartCurrentLimit(20, 5500);  // limit motor to 20A & 5500 RPM
 
     m_encoder1 = m_motor1.getEncoder();
     m_pidController = m_motor1.getPIDController();
@@ -115,10 +117,13 @@ public class Shooter extends SubsystemBase {
   //shoots the balls 
   public void shoot() {
     Robot r = TheRobot.getInstance();
+
+    r.m_hood.extend();
  
     // get distance to target
     double d = r.m_powerPowerTargeter.getDistance();
-    ShooterValueSet m_values = m_lookUpTable.getCurrentValues(false);
+    //ShooterValueSet m_values = m_lookUpTable.getCurrentValues(false);
+    ShooterValueSet m_values = new ShooterValueSet(45.0, 45.0);
 
     // tell shooter to come up to target speed based on distance
   

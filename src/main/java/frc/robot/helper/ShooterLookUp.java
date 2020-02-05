@@ -1,6 +1,7 @@
 package frc.robot.helper;
 
 import java.util.Map;
+import java.util.HashMap;
 import java.util.Set;
 
 import edu.wpi.first.networktables.NetworkTable;
@@ -18,6 +19,7 @@ public class ShooterLookUp // changes distance to speed and hood angle
         ntInst = NetworkTableInstance.getDefault();
         ntTble = ntInst.getTable("ContourTable"); // gets the networktable where the target information is stored
         ntTble.getEntry("TargetDistanceTest").setDouble(0);
+        valueTable = new HashMap<Double, ShooterValueSet>();
 
 
         fillTableVaules();
@@ -72,15 +74,15 @@ public class ShooterLookUp // changes distance to speed and hood angle
     private ShooterValueKey findClosestKey(Double Distance)
     {
         Set<Double> keys = valueTable.keySet(); // gets all valid keys for the value table
-        Double[] keyArray = (Double[]) keys.toArray();
+        ShooterValueKey[] keyArray = (ShooterValueKey[]) keys.toArray();
         ShooterValueKey closestKey = new ShooterValueKey(0.0, -1.0); // the keys that is the closest to the distance
 
-        for(Double key: keyArray) // goes through each key and find the differnce between the key and distance
+        for(ShooterValueKey key: keyArray) // goes through each key and find the differnce between the key and distance
         {
-            if(Math.abs(Distance - key) < closestKey.devationFromDistance | closestKey.devationFromDistance < 0)
+            if(Math.abs(Distance - key.key) < closestKey.devationFromDistance | closestKey.devationFromDistance < 0)
             {
-                closestKey.devationFromDistance = Math.abs(Distance - key);
-                closestKey.key = key;
+                closestKey.devationFromDistance = Math.abs(Distance - key.key);
+                closestKey.key = key.key;
             }
         }
 

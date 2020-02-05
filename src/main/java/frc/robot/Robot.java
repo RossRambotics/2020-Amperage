@@ -34,6 +34,7 @@ import frc.robot.subsystems.Indexer;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.PowerPortTargeter;
+import frc.robot.subsystems.Hood;
 import frc.robot.commands.Shoot;
 
 // network tables
@@ -61,19 +62,13 @@ public class Robot extends TimedRobot {
   public Intake m_intake = new Intake();
   public Shooter m_shooter = new Shooter();
   public PowerPortTargeter m_powerPowerTargeter = new PowerPortTargeter();
+  public Hood m_hood = new Hood();
   public CommandScheduler m_CMDScheduler = null;
 
   private static final String UNKNOWN = "Unknown";
   private final Timer m_timer = new Timer();
-  public CANSparkMax m_TestMotor = null;
-  private CANSparkMax m_leftMotor = null;
-  private CANSparkMax m_rightMotor = null;
-  private CANSparkMax m_indexerbottomMotor = null;
-  private CANSparkMax m_indexertopMotor = null;
   private Joystick m_stick = null;
-  private CANEncoder m_leftEncoder = null;
-  private CANEncoder m_rightEncoder = null;
-
+ 
   // setup ultra sonic sensor
   public AnalogInput ultrasonic0 = new AnalogInput(0);
 
@@ -98,20 +93,20 @@ public class Robot extends TimedRobot {
     m_CMDScheduler = CommandScheduler.getInstance();
 
     // initialize the subsystems
-    m_TestMotor = new CANSparkMax(30, MotorType.kBrushless);
+    //m_TestMotor = new CANSparkMax(30, MotorType.kBrushless);
     final NetworkTableInstance networkTableInstance = NetworkTableInstance.create();
     //networkTableInstance.startClient("10.32.1.105");
     // System.out.println("Network Tables Connected? " + Boolean.toString(networkTableInstance.isConnected()));
     m_visionTable = networkTableInstance.getTable("ContourTable");
     m_drive.SetVisionTable(m_visionTable);
     m_OI.SetDrive(m_drive);
-    m_indexerbottomMotor = new CANSparkMax(30, MotorType.kBrushless);
-    m_indexertopMotor = new CANSparkMax(30, MotorType.kBrushless);
-    m_leftMotor = new CANSparkMax(30, MotorType.kBrushless);
-    m_rightMotor = new CANSparkMax(30, MotorType.kBrushless);
+    //m_indexerbottomMotor = new CANSparkMax(30, MotorType.kBrushless);
+    //m_indexertopMotor = new CANSparkMax(30, MotorType.kBrushless);
+    //m_leftMotor = new CANSparkMax(30, MotorType.kBrushless);
+    //m_rightMotor = new CANSparkMax(30, MotorType.kBrushless);
     m_stick = new Joystick(0);
-    m_leftEncoder = m_leftMotor.getEncoder();
-    m_rightEncoder = m_rightMotor.getEncoder();
+    //m_leftEncoder = m_leftMotor.getEncoder();
+    //m_rightEncoder = m_rightMotor.getEncoder();
 
     // add commands to Dashboard
     SmartDashboard.putData("Shoot!", new Shoot());
@@ -163,6 +158,7 @@ public class Robot extends TimedRobot {
     m_intake.periodic();
     m_shooter.periodic();
     m_OI.periodic();
+    m_hood.periodic();
 
     if (true)
       return;
