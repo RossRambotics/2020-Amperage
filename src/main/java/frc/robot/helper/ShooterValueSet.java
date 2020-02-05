@@ -5,7 +5,7 @@ public class ShooterValueSet // the values to be returned when a key is given to
     public Double shooterRPM = null;
     public Double hoodAngle = null;
 
-    ShooterValueSet(Double HoodAngle, Double ShooterRPM)
+    public ShooterValueSet(Double HoodAngle, Double ShooterRPM)
     {
         hoodAngle = HoodAngle;
         shooterRPM = ShooterRPM;

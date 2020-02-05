@@ -46,23 +46,26 @@ public class Hood extends SubsystemBase {
    * Creates a new Shooter.
    */
   public Hood() {
-    // TODO fix the CAN id of the motors
+    
+    
     // setup motor
-    m_motorHood =  new CANSparkMax(55, MotorType.kBrushless);
-    m_motorHood.restoreFactoryDefaults();
+    m_motorHood =  new CANSparkMax(6, MotorType.kBrushless);
+    m_motorHood.setInverted(true);
+    m_motorHood.setSmartCurrentLimit(10, 200); // don't let the motor draw more than 10A & 200 RPM
+    //m_motorHood.restoreFactoryDefaults();
 
     m_encoderHood = m_motorHood.getEncoder();
     m_encoderHood.setPosition(0);
     m_pidController = m_motorHood.getPIDController();
 
     // PID coefficients
-    m_pid_kP = 5e-5; 
-    m_pid_kI = 1e-6;
+    m_pid_kP = 0.0001; 
+    m_pid_kI = 0.0;
     m_pid_kD = 0; 
     m_pid_kIz = 0; 
     m_pid_kFF = 0; 
-    m_pid_kMaxOutput = 1; 
-    m_pid_kMinOutput = -1;
+    m_pid_kMaxOutput = 1.0; 
+    m_pid_kMinOutput = -1.0;
     m_pid_maxRPM = 5700;
 
     // set PID coefficients
@@ -83,6 +86,8 @@ public class Hood extends SubsystemBase {
     SmartDashboard.putNumber("Hood Feed Forward", m_pid_kFF);
     SmartDashboard.putNumber("Hood Max Output", m_pid_kMaxOutput);
     SmartDashboard.putNumber("Hood Min Output", m_pid_kMinOutput);
+    SmartDashboard.putNumber("Hood Motor Power", m_motorHood.get());
+    SmartDashboard.putNumber("Hood Angle Manual", 0);
 
   }
 
@@ -98,6 +103,7 @@ public class Hood extends SubsystemBase {
     double ff = SmartDashboard.getNumber("Hood Feed Forward", 0);
     double max = SmartDashboard.getNumber("Hood Max Output", 0);
     double min = SmartDashboard.getNumber("Hood Min Output", 0);
+    double manualHoodAngle = SmartDashboard.getNumber("Hood Angle Manual", 0);
 
     // if PID coefficients on SmartDashboard have changed, write new values to controller
     if((p !=  m_pid_kP)) { m_pidController.setP(p);  m_pid_kP = p; }
@@ -110,13 +116,19 @@ public class Hood extends SubsystemBase {
       m_pid_kMinOutput = min;  m_pid_kMaxOutput = max; 
     }
 
-    if (m_extended == true) {
+    // If a manual hood angle is specific go there
+    // Otherwise if the hood should be exteneded use the lookup table
+    //        or retract
+    if (manualHoodAngle > 0) {
+      m_position_target = manualHoodAngle * Hood.kRotationsPerDegree;
+    } else if (m_extended == true) {
       ShooterValueSet m_values = m_lookUpTable.getCurrentValues(false);
+      //ShooterValueSet m_values = new ShooterValueSet(45.0, 45.0);
       m_position_target = m_values.hoodAngle * Hood.kRotationsPerDegree;  
     } else {
-      m_position_target = 0;
+      m_position_target = 0.01;
     }
-
+    //m_motorHood.set(0.25);
     m_pidController.setReference(m_position_target, ControlType.kPosition);
 
     // Get the position of the hood

@@ -24,8 +24,8 @@ public class Indexer extends SubsystemBase {
    */
   public Indexer() {
     // TODO fix the CAN id of the motors
-    m_bottomMotor =  new CANSparkMax(30, MotorType.kBrushless);
-    m_topMotor =  new CANSparkMax(30, MotorType.kBrushless);
+    m_bottomMotor =  new CANSparkMax(3, MotorType.kBrushless);
+    m_topMotor =  new CANSparkMax(4, MotorType.kBrushless);
     
   }
 
