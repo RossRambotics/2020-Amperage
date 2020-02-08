@@ -7,12 +7,16 @@
 
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Intake extends SubsystemBase {
   /**
    * Creates a new Intake.
    */
+  DoubleSolenoid intakeSolenoid = new DoubleSolenoid(15, 0, 1);// creates the solenoid on CAN id 15
+
   public Intake() {
 
   }
@@ -23,17 +27,13 @@ public class Intake extends SubsystemBase {
   }
   
     //retracts the intake 
-    //returns false if extended 
-    //returns true if fully retracted 
-    public boolean retract() {
-      return false;
+    public void retract() {
+      intakeSolenoid.set(Value.kReverse);
     }
 
     //extends the intake 
-    //returns false if retracted
-    //returns true if fully extended
-    public boolean extend() {
-      return false;
+    public void extend() {
+      intakeSolenoid.set(Value.kForward);
     }
     //spins the intake to capture a ball 
     //returns false if a ball is not being captured 

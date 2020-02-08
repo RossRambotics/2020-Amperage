@@ -46,8 +46,12 @@ public class RobotContainer {
   private void configureButtonBindings() {
 
     // setup the shooter using the right trigger
-    JoystickButton rightTrigger = new JoystickAnalogButton(m_Joystick1, 3);
+    JoystickButton rightTrigger = new JoystickAnalogButton(m_Joystick1, 3); // the trigger associated with shooting
     rightTrigger.whenHeld(new frc.robot.commands.Shoot().withTimeout(5.0));
+
+    JoystickButton aButton = new JoystickButton(m_Joystick1, 1); // the button associated while caputuring balls
+    aButton.whenPressed(new frc.robot.commands.DeployIntake());
+    aButton.whenReleased(new frc.robot.commands.RetractIntake());
 
 
 
