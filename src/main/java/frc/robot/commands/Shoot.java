@@ -32,6 +32,7 @@ public class Shoot extends CommandBase {
   public void execute() {
     Robot r = TheRobot.getInstance();
     r.m_shooter.shoot();
+    r.m_hood.extend();
   }
 
   // Called once the command ends or is interrupted.
@@ -44,6 +45,8 @@ public class Shoot extends CommandBase {
     }
     Robot r = TheRobot.getInstance();
     r.m_shooter.stop();
+    r.m_hood.retract();
+    r.m_indexer.stop();
   }
 
   // Returns true when the command should end.

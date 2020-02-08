@@ -117,17 +117,14 @@ public class Shooter extends SubsystemBase {
   //shoots the balls 
   public void shoot() {
     Robot r = TheRobot.getInstance();
-
-    // extend the hood
-    r.m_hood.extend();
  
     // get distance to target
-    ShooterValueSet m_values = m_lookUpTable.getCurrentValues(false);
-    
+    ShooterValueSet m_values = m_lookUpTable.getCurrentValues(true);
+    System.out.println(m_values);
     // tell shooter to come up to target speed based on distance  
     if (r.m_shooter.ready(m_values)) {
       // start the indexer
-      //r.m_indexer.shoot();
+      r.m_indexer.shoot();
     } else {
       // stop the indexer
       //r.m_indexer.stop();
@@ -159,7 +156,8 @@ public class Shooter extends SubsystemBase {
   // returns false if the shooter is not at target speed
   public boolean ready(ShooterValueSet m_Values) {
     // set the target RPM
-    m_RPM_target = m_Values.shooterRPM;
+    //m_RPM_target = m_Values.shooterRPM;
+    m_RPM_target = 5000.0;
 
     // set the PID Controller to hit the RPM
     m_pidController.setReference(m_RPM_target, ControlType.kVelocity);
