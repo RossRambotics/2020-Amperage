@@ -51,6 +51,7 @@ public class RobotContainer {
 
     JoystickButton aButton = new JoystickButton(m_Joystick1, 1); // the button associated while caputuring balls
     aButton.whenPressed(new frc.robot.commands.DeployIntake());
+    aButton.whileHeld(new frc.robot.commands.IntakeCapture());
     aButton.whenReleased(new frc.robot.commands.RetractIntake());
 
 
