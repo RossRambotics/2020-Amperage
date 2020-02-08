@@ -8,8 +8,10 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.TheRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import java.text.DecimalFormat;
 
@@ -30,6 +32,7 @@ public class Drive extends SubsystemBase {
   private final static int kDriveStyle_tank = 0;
   private final static int kDriveStyle_arcade1 = 1;
   private final static int kDriveStyle_arcade2 = 2;
+  private final static int kDriveStyle_arcade3 = 3;
   private int m_DriveStyle = Drive.kDriveStyle_tank;
   private DifferentialDrive m_differentialDrive = new DifferentialDrive(m_leftMotor, m_rightMotor);
   
@@ -40,6 +43,8 @@ public class Drive extends SubsystemBase {
    */
   public Drive(Joystick j) {
       m_driverStick = j;
+
+      SmartDashboard.putNumber("Drive\\Drive Style", m_DriveStyle);
   }
 
   public void SetVisionTable(NetworkTable n) {
@@ -57,6 +62,10 @@ public class Drive extends SubsystemBase {
   public void periodic() {
     // This method will be called once per scheduler run
 
+    // get/set drive style
+    
+    m_DriveStyle = (int)Math.round(SmartDashboard.getNumber("Drive\\Drive Style", 0));
+    TheRobot.log("Driver style: " + m_DriveStyle);
 
     // drive the robot with the joysticks
 
@@ -88,9 +97,9 @@ public class Drive extends SubsystemBase {
 
     // drive the robot in manual mode
     if (!m_bTargeting) {
-      this.JustDrive(dvalueLYAxis, dvalueRYAxis, dvalueLXAxis, dvalueLXAxis);
+      this.JustDrive(dvalueLYAxis, dvalueRYAxis, dvalueLXAxis, dvalueRXAxis);
     } else {
-      this.TargetDrive(dvalueLYAxis, dvalueRYAxis, dvalueLXAxis, dvalueLXAxis);
+      this.TargetDrive(dvalueLYAxis, dvalueRYAxis, dvalueLXAxis, dvalueRXAxis);
     }
   }
 
@@ -104,7 +113,7 @@ public class Drive extends SubsystemBase {
     }
 
     if (dvalueLYAxis == 0 && dvalueRYAxis == 0) {
-      this.TargetDriveSpin(dDirection, dFrame);
+      this.TargetDriveSpin(targetAngle, dFrame);
       return;
     }
 
@@ -125,17 +134,20 @@ public class Drive extends SubsystemBase {
       case Drive.kDriveStyle_arcade2:
         m_differentialDrive.arcadeDrive(dvalueRYAxis, dvalueLXAxis);
         break;
+       case Drive.kDriveStyle_arcade3:
+        m_differentialDrive.arcadeDrive( dvalueLYAxis, dvalueRXAxis);
+        break;
     }
 
     if (targetAngle > 0) {
       // turn right
-      this.JustDrive(dvalueLYAxis,0);
+      //this.JustDrive(dvalueLYAxis,0);
     } else if (targetAngle < 0) {
       // turn left
-      this.JustDrive(0, dvalueRYAxis);
+      //this.JustDrive(0, dvalueRYAxis);
     } else {
       // stop turning
-      this.JustDrive(0, 0);
+      //this.JustDrive(0, 0);
     }
 
   }
@@ -143,13 +155,13 @@ public class Drive extends SubsystemBase {
   private void TargetDriveSpin(double targetAngle, double frame) {
     if (targetAngle > 5) {
       // turn right
-      this.JustDrive(1,-1);
+      //this.JustDrive(1,-1);
     } else if (targetAngle < -5) {
       // turn left
-      this.JustDrive(-1,1);
+      //this.JustDrive(-1,1);
     } else {
       // stop turning
-      this.JustDrive(0, 0);
+      //this.JustDrive(0, 0);
     }
   }
 
@@ -161,10 +173,14 @@ public class Drive extends SubsystemBase {
         m_differentialDrive.tankDrive(dvalueLYAxis, dvalueRYAxis);
         break;
       case Drive.kDriveStyle_arcade1:
+        TheRobot.log("In arcade drive.");
         m_differentialDrive.arcadeDrive(dvalueLYAxis, dvalueLXAxis);
         break;
       case Drive.kDriveStyle_arcade2:
         m_differentialDrive.arcadeDrive(dvalueRYAxis, dvalueLXAxis);
+        break;
+      case Drive.kDriveStyle_arcade3:
+        m_differentialDrive.arcadeDrive(dvalueLYAxis, dvalueRXAxis,true);
         break;
     }
   }
