@@ -35,7 +35,7 @@ public class Hood extends SubsystemBase {
   private double m_position_target = 5000;
 
   private double m_pid_kP, m_pid_kI, m_pid_kD, m_pid_kIz, m_pid_kFF;
-  private double m_pid_kMaxOutput, m_pid_kMinOutput, m_pid_maxRPM;
+  private double m_pid_kMaxOutput, m_pid_kMinOutput;
 
   // 55/18 --- ratio of the 2 sprockets
   // * 4   --- 4:1 gear box
@@ -66,7 +66,6 @@ public class Hood extends SubsystemBase {
     m_pid_kFF = 0; 
     m_pid_kMaxOutput = 1.0; 
     m_pid_kMinOutput = -1.0;
-    m_pid_maxRPM = 5700;
 
     // set PID coefficients
     m_pidController.setP(m_pid_kP);
@@ -116,7 +115,7 @@ public class Hood extends SubsystemBase {
       m_pid_kMinOutput = min;  m_pid_kMaxOutput = max; 
     }
 
-    // If a manual hood angle is specific go there
+    // If a manual hood angle is specified go there
     // Otherwise if the hood should be exteneded use the lookup table
     //        or retract
     if (manualHoodAngle > 0) {
@@ -144,7 +143,6 @@ public class Hood extends SubsystemBase {
     Robot r = TheRobot.getInstance();
  
     // get distance to target
-    double d = r.m_powerPowerTargeter.getDistance();
     ShooterValueSet m_values = m_lookUpTable.getCurrentValues(false);
 
     // tell shooter to come up to target speed based on distance
@@ -174,13 +172,12 @@ public class Hood extends SubsystemBase {
       return false;
     }
     
-     //extends the hood
+    //extends the hood
     //returns false if not exteneded
     //returns true if exteneded
     public boolean extend() {
       m_extended = true;
       return false;
-    
     }
 
     public void stop() {
