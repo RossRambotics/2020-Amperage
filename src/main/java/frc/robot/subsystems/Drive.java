@@ -180,7 +180,7 @@ public class Drive extends SubsystemBase {
         m_differentialDrive.arcadeDrive(dvalueRYAxis, dvalueLXAxis);
         break;
       case Drive.kDriveStyle_arcade3:
-        m_differentialDrive.arcadeDrive(dvalueLYAxis, dvalueRXAxis,true);
+        m_differentialDrive.arcadeDrive(dvalueLYAxis, dvalueRXAxis, true);
         break;
     }
   }
