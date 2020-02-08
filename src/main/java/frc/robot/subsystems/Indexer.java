@@ -26,6 +26,8 @@ public class Indexer extends SubsystemBase {
     // TODO fix the CAN id of the motors
     m_bottomMotor =  new CANSparkMax(3, MotorType.kBrushless);
     m_topMotor =  new CANSparkMax(4, MotorType.kBrushless);
+    m_topMotor.setInverted(true);
+    m_bottomMotor.setInverted(true);
     
   }
 
@@ -55,7 +57,7 @@ public class Indexer extends SubsystemBase {
 
   public void stop() {
     // stops the indexer motors
-    m_bottomMotor.set(0);
+    m_topMotor.set(0);
     m_bottomMotor.set(0);
   }
 

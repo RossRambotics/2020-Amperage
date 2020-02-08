@@ -40,7 +40,7 @@ public class Hood extends SubsystemBase {
   // 55/18 --- ratio of the 2 sprockets
   // * 4   --- 4:1 gear box
   // / 360 --- degrees per rotation of the hood
-  private static final double kRotationsPerDegree = ((55 / 18) * 4) / 360; 
+  private static final double kRotationsPerDegree = ((55.0 / 18.0) * 4.0) / 360.0; 
 
   /**
    * Creates a new Shooter.
@@ -51,7 +51,7 @@ public class Hood extends SubsystemBase {
     // setup motor
     m_motorHood =  new CANSparkMax(6, MotorType.kBrushless);
     m_motorHood.setInverted(true);
-    m_motorHood.setSmartCurrentLimit(10, 200); // don't let the motor draw more than 10A & 200 RPM
+    m_motorHood.setSmartCurrentLimit(10); // don't let the motor draw more than 10A & 200 RPM
     //m_motorHood.restoreFactoryDefaults();
 
     m_encoderHood = m_motorHood.getEncoder();
@@ -59,7 +59,7 @@ public class Hood extends SubsystemBase {
     m_pidController = m_motorHood.getPIDController();
 
     // PID coefficients
-    m_pid_kP = 0.0001; 
+    m_pid_kP = 0.7; 
     m_pid_kI = 0.0;
     m_pid_kD = 0; 
     m_pid_kIz = 0; 
@@ -119,17 +119,27 @@ public class Hood extends SubsystemBase {
     // If a manual hood angle is specific go there
     // Otherwise if the hood should be exteneded use the lookup table
     //        or retract
+    
     if (manualHoodAngle > 0) {
       m_position_target = manualHoodAngle * Hood.kRotationsPerDegree;
+      TheRobot.log("Hood target rot: " + TheRobot.toString(m_position_target));
+      TheRobot.log("Hood RperD: " + TheRobot.toString(Hood.kRotationsPerDegree));
+      TheRobot.log("Hood target deg: " + TheRobot.toString(manualHoodAngle));
     } else if (m_extended == true) {
       ShooterValueSet m_values = m_lookUpTable.getCurrentValues(false);
       //ShooterValueSet m_values = new ShooterValueSet(45.0, 45.0);
-      m_position_target = m_values.hoodAngle * Hood.kRotationsPerDegree;  
+      //m_position_target = m_values.hoodAngle * Hood.kRotationsPerDegree; 
+
+      m_position_target = 55.0 * Hood.kRotationsPerDegree;  
+      TheRobot.log("--------Hood Target:  " + TheRobot.toString(m_position_target));
     } else {
       m_position_target = 0.01;
     }
+    
     //m_motorHood.set(0.25);
+    //TheRobot.log("Hood target: " + TheRobot.toString(m_position_target));
     m_pidController.setReference(m_position_target, ControlType.kPosition);
+    //m_pidController.setReference(2, ControlType.kPosition);
 
     // Get the position of the hood
     m_position_hood = Math.abs(m_encoderHood.getPosition());
@@ -143,13 +153,14 @@ public class Hood extends SubsystemBase {
   public void shoot() {
     Robot r = TheRobot.getInstance();
  
+
     // get distance to target
     double d = r.m_powerPowerTargeter.getDistance();
     ShooterValueSet m_values = m_lookUpTable.getCurrentValues(false);
 
     // tell shooter to come up to target speed based on distance
   
-    if (r.m_shooter.ready(m_values)) {
+    if (r.m_hood.ready(m_values)) {
       // start the indexer
       //r.m_indexer.shoot();
     } else {
@@ -204,10 +215,10 @@ public class Hood extends SubsystemBase {
 
     // set the PID Controller to hit the position
     m_pidController.setReference(m_position_target, ControlType.kPosition);
-    TheRobot.log("Shooter ready RPM_target:" + TheRobot.toString(m_position_target));
+    TheRobot.log("Hood ready Position_target:" + TheRobot.toString(m_position_target));
 
     // See if motor hood are within range tolerance
-    double range = 2;
+    double range = .1;
     if (Math.abs(m_position_target - m_position_hood) < range) {
       return true;
     } 
