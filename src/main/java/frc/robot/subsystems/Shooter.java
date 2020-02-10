@@ -35,6 +35,9 @@ public class Shooter extends SubsystemBase {
 
   private double m_pid_kP, m_pid_kI, m_pid_kD, m_pid_kIz, m_pid_kFF;
   private double m_pid_kMaxOutput, m_pid_kMinOutput, m_pid_maxRPM;
+  private boolean m_bTuning = false;
+  private double m_dTuningRPM = 0;
+  
 
   /**
    * Creates a new Shooter.
@@ -72,13 +75,15 @@ public class Shooter extends SubsystemBase {
     m_lookUpTable = new ShooterLookUp();
 
     // display PID coefficients on SmartDashboard
-    SmartDashboard.putNumber("Shooter P Gain", m_pid_kP);
-    SmartDashboard.putNumber("Shooter I Gain", m_pid_kI);
-    SmartDashboard.putNumber("Shooter D Gain", m_pid_kD);
-    SmartDashboard.putNumber("Shooter I Zone", m_pid_kIz);
-    SmartDashboard.putNumber("Shooter Feed Forward", m_pid_kFF);
-    SmartDashboard.putNumber("Shooter Max Output", m_pid_kMaxOutput);
-    SmartDashboard.putNumber("Shooter Min Output", m_pid_kMinOutput);
+    SmartDashboard.putNumber("Shooter/P Gain", m_pid_kP);
+    SmartDashboard.putNumber("Shooter/I Gain", m_pid_kI);
+    SmartDashboard.putNumber("Shooter/D Gain", m_pid_kD);
+    SmartDashboard.putNumber("Shooter/I Zone", m_pid_kIz);
+    SmartDashboard.putNumber("Shooter/Feed Forward", m_pid_kFF);
+    SmartDashboard.putNumber("Shooter/Max Output", m_pid_kMaxOutput);
+    SmartDashboard.putNumber("Shooter/Min Output", m_pid_kMinOutput);
+    SmartDashboard.putBoolean("Shooter/Tuning Mode", m_bTuning);
+    SmartDashboard.putNumber("Shooter/Tuning RPM", m_dTuningRPM);
 
   }
 
@@ -87,13 +92,17 @@ public class Shooter extends SubsystemBase {
     // This method will be called once per scheduler run
 
     // read PID coefficients from SmartDashboard
-    double p = SmartDashboard.getNumber("Shooter P Gain", 0);
-    double i = SmartDashboard.getNumber("Shooter I Gain", 0);
-    double d = SmartDashboard.getNumber("Shooter D Gain", 0);
-    double iz = SmartDashboard.getNumber("Shooter I Zone", 0);
-    double ff = SmartDashboard.getNumber("Shooter Feed Forward", 0);
-    double max = SmartDashboard.getNumber("Shooter Max Output", 0);
-    double min = SmartDashboard.getNumber("Shooter Min Output", 0);
+    double p = SmartDashboard.getNumber("Shooter/P Gain", 0);
+    double i = SmartDashboard.getNumber("Shooter/I Gain", 0);
+    double d = SmartDashboard.getNumber("Shooter/D Gain", 0);
+    double iz = SmartDashboard.getNumber("Shooter/I Zone", 0);
+    double ff = SmartDashboard.getNumber("Shooter/Feed Forward", 0);
+    double max = SmartDashboard.getNumber("Shooter/Max Output", 0);
+    double min = SmartDashboard.getNumber("Shooter/Min Output", 0);
+    m_bTuning = SmartDashboard.getBoolean("Shooter/Tuning Mode", m_bTuning);
+    m_dTuningRPM = SmartDashboard.getNumber("Shooter/Tuning RPM", m_dTuningRPM);
+
+
 
     // if PID coefficients on SmartDashboard have changed, write new values to controller
     if((p !=  m_pid_kP)) { m_pidController.setP(p);  m_pid_kP = p; }
@@ -110,8 +119,8 @@ public class Shooter extends SubsystemBase {
     m_RPM_shooter = Math.abs(m_encoder1.getVelocity());
 
     // Output to dashboard
-    SmartDashboard.putNumber("Shooter Current RPM", m_RPM_shooter);
-    SmartDashboard.putNumber("Shooter Target RPM", m_RPM_target);
+    SmartDashboard.putNumber("Shooter/Current RPM", m_RPM_shooter);
+    SmartDashboard.putNumber("Shooter/Target RPM", m_RPM_target);
   }
 
   //shoots the balls 
@@ -157,14 +166,14 @@ public class Shooter extends SubsystemBase {
   public boolean ready(ShooterValueSet m_Values) {
     // set the target RPM
     //m_RPM_target = m_Values.shooterRPM;
-    m_RPM_target = 5000.0;
+    m_RPM_target = m_dTuningRPM;
 
     // set the PID Controller to hit the RPM
     m_pidController.setReference(m_RPM_target, ControlType.kVelocity);
     TheRobot.log("Shooter ready RPM_target:" + TheRobot.toString(m_RPM_target));
 
     // See if motor RPM are within range tolerance
-    double range = 200;
+    double range = 100;
     if (Math.abs(m_RPM_target - m_RPM_shooter) < range) {
       return true;
     } 

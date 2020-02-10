@@ -39,10 +39,27 @@ public class ShooterLookUp // changes distance to speed and hood angle
         addTableValue(7.5, 70.0, 4075.0);
     }
 
+    public boolean isTargetFound() {
+        boolean isFound = ntTble.getEntry("TargetFound").getBoolean(false);
+
+        return isFound;
+
+    }
+
+    public double getTargetAngle() {
+        double d = ntTble.getEntry("TargetAngle").getDouble(0);
+
+        return d;
+    }
+    //final NetworkTableInstance networkTableInstance = NetworkTableInstance.create();
+    //networkTableInstance.startClient("10.32.1.105");
+    // System.out.println("Network Tables Connected? " + Boolean.toString(networkTableInstance.isConnected()));
+
+
     private void addTableValue(Double Key, Double HoodAngle, Double ShooterSpeed) // appedns a set of values to the look up table system
     {
         valueTable.put(Key, new ShooterValueSet(HoodAngle, ShooterSpeed));
-
+        keyArray.add(Key);
     }
 
     public ShooterValueSet getCurrentValues(Boolean Interpolate) // gets the hood and shooter speed values; interpolate ~ if true finds values between two existing
@@ -81,7 +98,7 @@ public class ShooterLookUp // changes distance to speed and hood angle
 
         for(Double key: keyArray) // goes through each key and find the differnce between the key and distance
         {
-            if(Math.abs(Distance - key) < closestKey.devationFromDistance | closestKey.devationFromDistance < 0)
+            if(((Math.abs(Distance - key) < closestKey.devationFromDistance)) | closestKey.devationFromDistance < 0)
             {
                 closestKey.devationFromDistance = Math.abs(Distance - key);
                 closestKey.key = key;
@@ -97,7 +114,7 @@ public class ShooterLookUp // changes distance to speed and hood angle
 
         for(Double key: keyArray) // goes through each key and find the differnce between the key and distance
         {
-            if((Distance - key <= 0) && (Math.abs(Distance - key) < closestKey.devationFromDistance | closestKey.devationFromDistance < 0))
+            if((((Distance - key <= 0) && (Math.abs(Distance - key) < closestKey.devationFromDistance)) | closestKey.devationFromDistance < 0))
             {
                 closestKey.devationFromDistance = Math.abs(Distance - key);
                 closestKey.key = key;
@@ -113,7 +130,7 @@ public class ShooterLookUp // changes distance to speed and hood angle
 
         for(Double key: keyArray) // goes through each key and find the differnce between the key and distance
         {
-            if((Distance - key >= 0) && (Math.abs(Distance - key) < closestKey.devationFromDistance | closestKey.devationFromDistance < 0))
+            if((((Distance - key >= 0) && (Math.abs(Distance - key) < closestKey.devationFromDistance)) | closestKey.devationFromDistance < 0))
             {
                 closestKey.devationFromDistance = Math.abs(Distance - key);
                 closestKey.key = key;
@@ -141,4 +158,10 @@ public class ShooterLookUp // changes distance to speed and hood angle
     {
         return (((Value1 * Wieght1) + (Value2 * Wieght2)) / (Wieght1 + Wieght2));
     }
+
+	public double getFrameCounter() {
+		double d = ntTble.getEntry("FrameCounter").getDouble(0);
+
+        return d;
+	}
 }

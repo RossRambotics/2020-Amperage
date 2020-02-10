@@ -19,7 +19,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Intake extends SubsystemBase {
-  private DoubleSolenoid intakeSolenoid = new DoubleSolenoid(15, 0, 1);// creates the solenoid on CAN id 15
+  private DoubleSolenoid intakeSolenoid = null;//new DoubleSolenoid(15, 0, 1);// creates the solenoid on CAN id 15
   private CANSparkMax intakeMotor = null;
   private CANEncoder intakeEncoder = null;
   private CANPIDController intakePIDController = null;
@@ -35,11 +35,12 @@ public class Intake extends SubsystemBase {
   private Double captureSpeed = 0.0; // the capture speed for the intake in RPM
 
   public Intake() {
-    intakeMotor = new CANSparkMax(6, MotorType.kBrushless);
-    intakeEncoder = new CANEncoder(intakeMotor);
+    intakeMotor = null; //new CANSparkMax(56, MotorType.kBrushless);
+    intakeEncoder = null;//new CANEncoder(intakeMotor);
+    /*
     intakeEncoder.setPosition(0);
     intakePIDController = intakeMotor.getPIDController();
-
+  
     pid_kP = 0.0001;
     pid_kI = 0.0;
     pid_kD = 0.0;
@@ -66,10 +67,12 @@ public class Intake extends SubsystemBase {
     SmartDashboard.putNumber("Intake/pid_kMAX", pid_kMAX);
     SmartDashboard.putNumber("Intake/pid_kMIN", pid_kMIN);
     SmartDashboard.putNumber("Intake/intakeMotor_Power", intakeMotor.get());
+  */
   }
 
   @Override
   public void periodic() {
+    if (true) return;
     // updates SmartDashbaord linked variables as needed
     if (captureSpeed != SmartDashboard.getNumber("Intake/CaptureSpeed", captureSpeed)) {
       captureSpeed = SmartDashboard.getNumber("Intake/CaptureSpeed", captureSpeed);

@@ -26,6 +26,8 @@ public class Indexer extends SubsystemBase {
     // TODO fix the CAN id of the motors
     m_bottomMotor =  new CANSparkMax(3, MotorType.kBrushless);
     m_topMotor =  new CANSparkMax(4, MotorType.kBrushless);
+    m_bottomMotor.restoreFactoryDefaults();
+    m_topMotor.restoreFactoryDefaults();
     m_topMotor.setInverted(true);
     m_bottomMotor.setInverted(true);
     
@@ -40,6 +42,9 @@ public class Indexer extends SubsystemBase {
   // returns false if balls are still moving/inbetween
   // returns true if the balls finished moving
   public boolean advance() {
+    // set the indexer motors to run
+    //m_bottomMotor.set(0.45);
+    m_topMotor.set(0.75);
     return false;
   }
 
@@ -48,8 +53,8 @@ public class Indexer extends SubsystemBase {
   // returns true is all of the balls are out 
   public boolean shoot() {
     // set the indexer motors to run
-    m_bottomMotor.set(0.25);
-    m_topMotor.set(0.25);
+    m_bottomMotor.set(0.75);
+    m_topMotor.set(0.75);
 
     // TODO detect whether there are balls remaining
     return false;
@@ -64,7 +69,9 @@ public class Indexer extends SubsystemBase {
   // makes the balls go backward out of the intake
   // returns false if the balls did not move back
   // returns true of the balls did move backwards 
-    public boolean clear() {
-    return false;
+  public boolean clear() {
+    m_bottomMotor.set(-0.50);
+    m_topMotor.set(-0.50);
+  return false;
   }
 }

@@ -8,34 +8,23 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.TheRobot;
+import edu.wpi.first.wpilibj.DigitalOutput;
 
-// network tables
-import edu.wpi.first.networktables.NetworkTable;
+public class TargetingRelay extends SubsystemBase {
+  boolean m_bIsOn = false;  // true if the relay is on
+  private final DigitalOutput m_LEDrelay = new DigitalOutput(0); // digital output tied to the realy
 
 
-public class PowerPortTargeter extends SubsystemBase {
   /**
-   * Creates a new PowerPortTargeter.
+   * Creates a new TargetingRelay.
    */
-  public PowerPortTargeter() {
+  public TargetingRelay() {
 
   }
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-  }
-
-
-  // returns the distance to the Power Port
-  // returns zero if unknown
-  public double getDistance() {
-    // get the distance to the target from the network tables
-    //NetworkTable n = TheRobot.getInstance().m_drive.GetNetworkTable();
-    //double v = n.getEntry("TargetDistance").getDouble(0);
-    //TheRobot.log("TargetDistance: " + TheRobot.toString(v));
-
-    return 0;
+    m_LEDrelay.set(m_bIsOn);
   }
 }

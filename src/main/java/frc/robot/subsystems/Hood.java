@@ -79,15 +79,16 @@ public class Hood extends SubsystemBase {
     m_lookUpTable = new ShooterLookUp();
 
     // display PID coefficients on SmartDashboard
-    SmartDashboard.putNumber("Hood P Gain", m_pid_kP);
-    SmartDashboard.putNumber("Hood I Gain", m_pid_kI);
-    SmartDashboard.putNumber("Hood D Gain", m_pid_kD);
-    SmartDashboard.putNumber("Hood I Zone", m_pid_kIz);
-    SmartDashboard.putNumber("Hood Feed Forward", m_pid_kFF);
-    SmartDashboard.putNumber("Hood Max Output", m_pid_kMaxOutput);
-    SmartDashboard.putNumber("Hood Min Output", m_pid_kMinOutput);
-    SmartDashboard.putNumber("Hood Motor Power", m_motorHood.get());
-    SmartDashboard.putNumber("Hood Angle Manual", 0);
+    SmartDashboard.putNumber("Hood/P Gain", m_pid_kP);
+    SmartDashboard.putNumber("Hood/I Gain", m_pid_kI);
+    SmartDashboard.putNumber("Hood/D Gain", m_pid_kD);
+    SmartDashboard.putNumber("Hood/I Zone", m_pid_kIz);
+    SmartDashboard.putNumber("Hood/Feed Forward", m_pid_kFF);
+    SmartDashboard.putNumber("Hood/Max Output", m_pid_kMaxOutput);
+    SmartDashboard.putNumber("Hood/Min Output", m_pid_kMinOutput);
+    SmartDashboard.putNumber("Hood/Motor Power", m_motorHood.get());
+    SmartDashboard.putNumber("Hood/Angle Manual", 0);
+
 
   }
 
@@ -96,14 +97,15 @@ public class Hood extends SubsystemBase {
     // This method will be called once per scheduler run
 
     // read PID coefficients from SmartDashboard
-    double p = SmartDashboard.getNumber("Hood P Gain", 0);
-    double i = SmartDashboard.getNumber("Hood I Gain", 0);
-    double d = SmartDashboard.getNumber("Hood D Gain", 0);
-    double iz = SmartDashboard.getNumber("Hood I Zone", 0);
-    double ff = SmartDashboard.getNumber("Hood Feed Forward", 0);
-    double max = SmartDashboard.getNumber("Hood Max Output", 0);
-    double min = SmartDashboard.getNumber("Hood Min Output", 0);
-    double manualHoodAngle = SmartDashboard.getNumber("Hood Angle Manual", 0);
+    double p = SmartDashboard.getNumber("Hood/P Gain", 0);
+    double i = SmartDashboard.getNumber("Hood/I Gain", 0);
+    double d = SmartDashboard.getNumber("Hood/D Gain", 0);
+    double iz = SmartDashboard.getNumber("Hood/I Zone", 0);
+    double ff = SmartDashboard.getNumber("Hood/Feed Forward", 0);
+    double max = SmartDashboard.getNumber("Hood/Max Output", 0);
+    double min = SmartDashboard.getNumber("Hood/Min Output", 0);
+    double manualHoodAngle = SmartDashboard.getNumber("Hood/Angle Manual", 0);
+
 
     // if PID coefficients on SmartDashboard have changed, write new values to controller
     if((p !=  m_pid_kP)) { m_pidController.setP(p);  m_pid_kP = p; }
@@ -145,8 +147,8 @@ public class Hood extends SubsystemBase {
     m_position_hood = Math.abs(m_encoderHood.getPosition());
 
     // Output to dashboard
-    SmartDashboard.putNumber("Hood Current Position", m_position_hood);
-    SmartDashboard.putNumber("Hood Target Position", m_position_target);
+    SmartDashboard.putNumber("Hood/Current Position", m_position_hood);
+    SmartDashboard.putNumber("Hood/Target Position", m_position_target);
   }
 
   //shoots the balls 
@@ -208,7 +210,7 @@ public class Hood extends SubsystemBase {
   // if distance is zero takes hood to default position
   // returns false if the hood is not at target position
   public boolean ready(ShooterValueSet m_Values) {
-    m_position_target = m_Values.hoodAngle;  // default target speed
+    m_position_target = m_Values.hoodAngle;  // default target angle
     double maxPower = 0.5;      // default maximum power
 
     // TODO lookup target speed based on distance

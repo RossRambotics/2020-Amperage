@@ -20,6 +20,7 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
 // network tables
 import edu.wpi.first.networktables.NetworkTable;
+import frc.robot.helper.ShooterLookUp;
 
 public class Drive extends SubsystemBase {
   private  Joystick m_driverStick = null;
@@ -27,13 +28,18 @@ public class Drive extends SubsystemBase {
   private final WPI_TalonFX m_leftMotor = new WPI_TalonFX(21);
   private final WPI_TalonFX m_rightMotor = new WPI_TalonFX(22);
   private boolean m_bTargeting = false;
-  private NetworkTable m_visionTable = null;
+  private double m_dTargetMaxPower = 0.4;
+  private double m_dTargetMinPower = 0.1;
+  private double m_dTargetSpinP = 0.3;
+  private double m_dTargetSpinDeadZone = 1.0;
+
+  private ShooterLookUp m_lookUpTable = null; // look up table for shooter values
 
   private final static int kDriveStyle_tank = 0;
   private final static int kDriveStyle_arcade1 = 1;
   private final static int kDriveStyle_arcade2 = 2;
   private final static int kDriveStyle_arcade3 = 3;
-  private int m_DriveStyle = Drive.kDriveStyle_tank;
+  private int m_DriveStyle = Drive.kDriveStyle_arcade3;
   private DifferentialDrive m_differentialDrive = new DifferentialDrive(m_leftMotor, m_rightMotor);
   
 
@@ -44,15 +50,14 @@ public class Drive extends SubsystemBase {
   public Drive(Joystick j) {
       m_driverStick = j;
 
-      SmartDashboard.putNumber("Drive\\Drive Style", m_DriveStyle);
-  }
+      SmartDashboard.putNumber("Drive/Drive Style", m_DriveStyle);
+      SmartDashboard.putNumber("Targeting/Max Power", m_dTargetMaxPower);
+      SmartDashboard.putNumber("Targeting/Min Power", m_dTargetMinPower);
+      SmartDashboard.putNumber("Targeting/Spin P", m_dTargetSpinP);
+      SmartDashboard.putNumber("Targeting/Spin Dead Zone", m_dTargetSpinDeadZone);
+      SmartDashboard.putNumber("Targeting/Spin Steer", 0);
 
-  public void SetVisionTable(NetworkTable n) {
-    m_visionTable = n;
-  }
-
-  public NetworkTable GetNetworkTable() {
-    return m_visionTable;
+      m_lookUpTable = new ShooterLookUp();
   }
 
   private double m_deadzone = 0.05;
@@ -64,8 +69,12 @@ public class Drive extends SubsystemBase {
 
     // get/set drive style
     
-    m_DriveStyle = (int)Math.round(SmartDashboard.getNumber("Drive\\Drive Style", 0));
-    TheRobot.log("Driver style: " + m_DriveStyle);
+    m_DriveStyle = (int)Math.round(SmartDashboard.getNumber("Drive/Drive Style", 0));
+    m_dTargetMaxPower = SmartDashboard.getNumber("Targeting/Max Power", 0);
+    m_dTargetMinPower = SmartDashboard.getNumber("Targeting/Min Power", 0);
+    m_dTargetSpinP = SmartDashboard.getNumber("Targeting/Spin P", 0);
+    m_dTargetSpinDeadZone = SmartDashboard.getNumber("Targeting/Spin Dead Zone", 0);
+
 
     // drive the robot with the joysticks
 
@@ -104,12 +113,12 @@ public class Drive extends SubsystemBase {
   }
 
   private void TargetDrive(double dvalueLYAxis, double dvalueRYAxis, double dvalueLXAxis, double dvalueRXAxis) {
-    double targetAngle = m_visionTable.getEntry("TargetAngle").getDouble(0);
-    double dFrame = m_visionTable.getEntry("FrameCounter").getDouble(0);
+    double targetAngle = m_lookUpTable.getTargetAngle();
+    double dFrame = m_lookUpTable.getFrameCounter();
 
     if (true) {
-    //System.out.println("Frame: " +df3.format(dFrame) +
-   //                   " TargetAngle: " + df3.format(dDirection));
+    TheRobot.log("Frame: " +df3.format(dFrame) +
+                 " TargetAngle: " + df3.format(targetAngle));
     }
 
     if (dvalueLYAxis == 0 && dvalueRYAxis == 0) {
@@ -118,6 +127,7 @@ public class Drive extends SubsystemBase {
     }
 
     // target while driving
+    double steer = 0;
     switch (m_DriveStyle) {
       case Drive.kDriveStyle_tank: {
         // Turn right?
@@ -128,14 +138,16 @@ public class Drive extends SubsystemBase {
 
         m_differentialDrive.tankDrive(dvalueLYAxis, dvalueRYAxis);
       } break;
-      case Drive.kDriveStyle_arcade1:
-        m_differentialDrive.arcadeDrive(dvalueLYAxis, dvalueLXAxis);
-        break;
       case Drive.kDriveStyle_arcade2:
-        m_differentialDrive.arcadeDrive(dvalueRYAxis, dvalueLXAxis);
-        break;
-       case Drive.kDriveStyle_arcade3:
-        m_differentialDrive.arcadeDrive( dvalueLYAxis, dvalueRXAxis);
+        dvalueLYAxis = dvalueRYAxis;
+        
+      case Drive.kDriveStyle_arcade1:
+      case Drive.kDriveStyle_arcade3:
+        // scaling steer to -1 to 1 over 45 degrees
+        steer = targetAngle/45.0;
+        if (steer > 1.0) steer = 1.0;
+        if (steer < -1.0) steer = -1.0;
+        m_differentialDrive.arcadeDrive( dvalueLYAxis, steer);
         break;
     }
 
@@ -153,16 +165,25 @@ public class Drive extends SubsystemBase {
   }
 
   private void TargetDriveSpin(double targetAngle, double frame) {
-    if (targetAngle > 5) {
-      // turn right
-      //this.JustDrive(1,-1);
-    } else if (targetAngle < -5) {
-      // turn left
-      //this.JustDrive(-1,1);
-    } else {
-      // stop turning
-      //this.JustDrive(0, 0);
+    if (Math.abs(targetAngle) <= m_dTargetSpinDeadZone){
+      m_differentialDrive.arcadeDrive(0, 0, false);
     }
+
+
+    double steer = targetAngle/45.0;
+
+    if (steer > m_dTargetMaxPower) steer = m_dTargetMaxPower;
+    if (steer < -m_dTargetMaxPower) steer = -m_dTargetMaxPower;
+
+    steer = steer * m_dTargetSpinP;
+
+    if (Math.abs(steer) < m_dTargetMinPower) {
+      if (steer < 0) steer = -m_dTargetMinPower;
+      if (steer > 0) steer = m_dTargetMinPower;
+    }
+
+    m_differentialDrive.arcadeDrive(0, steer, false);
+    SmartDashboard.putNumber("Targeting/Spin Steer", steer);
   }
 
   // sets the drive power for the left & right motors
@@ -173,7 +194,6 @@ public class Drive extends SubsystemBase {
         m_differentialDrive.tankDrive(dvalueLYAxis, dvalueRYAxis);
         break;
       case Drive.kDriveStyle_arcade1:
-        TheRobot.log("In arcade drive.");
         m_differentialDrive.arcadeDrive(dvalueLYAxis, dvalueLXAxis);
         break;
       case Drive.kDriveStyle_arcade2:

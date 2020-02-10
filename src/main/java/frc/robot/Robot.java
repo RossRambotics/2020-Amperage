@@ -94,11 +94,11 @@ public class Robot extends TimedRobot {
 
     // initialize the subsystems
     //m_TestMotor = new CANSparkMax(30, MotorType.kBrushless);
-    final NetworkTableInstance networkTableInstance = NetworkTableInstance.create();
+    //final NetworkTableInstance networkTableInstance = NetworkTableInstance.create();
     //networkTableInstance.startClient("10.32.1.105");
     // System.out.println("Network Tables Connected? " + Boolean.toString(networkTableInstance.isConnected()));
-    m_visionTable = networkTableInstance.getTable("ContourTable");
-    m_drive.SetVisionTable(m_visionTable);
+    //m_visionTable = networkTableInstance.getTable("ContourTable");
+    //m_drive.SetVisionTable(m_visionTable);
     m_OI.SetDrive(m_drive);
     //m_indexerbottomMotor = new CANSparkMax(30, MotorType.kBrushless);
     //m_indexertopMotor = new CANSparkMax(30, MotorType.kBrushless);
@@ -155,7 +155,7 @@ public class Robot extends TimedRobot {
     m_controlPanel.periodic();
     m_drive.periodic();
     m_indexer.periodic();
-    m_intake.periodic();
+    //m_intake.periodic();
     m_shooter.periodic();
     m_OI.periodic();
     m_hood.periodic();

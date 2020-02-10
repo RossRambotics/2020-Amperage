@@ -18,7 +18,7 @@ import frc.robot.subsystems.Drive;
 
 public class OI extends SubsystemBase {
   private final Joystick m_stick = new Joystick(0);
-  private final DigitalOutput m_LEDrelay = new DigitalOutput(0);
+  //private final DigitalOutput m_LEDrelay = new DigitalOutput(0);
   private Drive m_drive = null;
   private int m_currentShot = 0;  // How many times have we finished shooting
   private int m_nextShot = 0;     // The count of the next shot (used to prevent multiple simultaneous shots)
@@ -67,7 +67,7 @@ public class OI extends SubsystemBase {
 
     if (bValueButton){
       // System.out.println("Green A Button");
-      m_LEDrelay.set(true);
+      //m_LEDrelay.set(true);
       System.out.println("DigitalOutput set to true");
 //      m_LEDrelay.set(Relay.Value.kForward);
 //      System.out.println("Relay set to kForward");
@@ -80,7 +80,7 @@ public class OI extends SubsystemBase {
 
     if (bValueButton){
       // System.out.println("Blue X Button");
-      m_LEDrelay.set(false);
+      //m_LEDrelay.set(false);
       // System.out.println("DigitalOutput set to false");
 //      m_LEDrelay.set(Relay.Value.kOff);
 //      System.out.println("Relay set to kOff");
