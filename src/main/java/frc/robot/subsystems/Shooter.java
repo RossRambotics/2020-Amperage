@@ -32,6 +32,7 @@ public class Shooter extends SubsystemBase {
 
   private double m_RPM_shooter = 0;
   private double m_RPM_target = 5000;
+  private double m_RPM_target_range = 100;
 
   private double m_pid_kP, m_pid_kI, m_pid_kD, m_pid_kIz, m_pid_kFF;
   private double m_dpid_kI_Modified;
@@ -86,7 +87,8 @@ public class Shooter extends SubsystemBase {
     SmartDashboard.putNumber("Shooter/Max Output", m_pid_kMaxOutput);
     SmartDashboard.putNumber("Shooter/Min Output", m_pid_kMinOutput);
     SmartDashboard.putBoolean("Shooter/Tuning Mode", m_bTuning);
-    SmartDashboard.putNumber("Shooter/Tuning RPM", m_dTuningRPM);
+    SmartDashboard.putNumber("Shooter/Tuning RPM", m_dTuningRPM); 
+    SmartDashboard.putNumber("Shooter/RPM Target Range", m_RPM_target_range);
 
   }
 
@@ -114,7 +116,7 @@ public class Shooter extends SubsystemBase {
     double min = SmartDashboard.getNumber("Shooter/Min Output", 0);
     m_bTuning = SmartDashboard.getBoolean("Shooter/Tuning Mode", m_bTuning);
     m_dTuningRPM = SmartDashboard.getNumber("Shooter/Tuning RPM", m_dTuningRPM);
-
+    m_RPM_target_range =  SmartDashboard.getNumber("Shooter/RPM Target Range", 0);
 
     // if PID coefficients on SmartDashboard have changed, write new values to controller
     if((p !=  m_pid_kP)) { m_pidController.setP(p);  m_pid_kP = p; }
@@ -191,9 +193,18 @@ public class Shooter extends SubsystemBase {
     TheRobot.log("Shooter ready RPM_target:" + TheRobot.toString(m_RPM_target));
 
     // See if motor RPM are within range tolerance
-    double range = 100;
+    double range = m_RPM_target_range;
     if (Math.abs(m_RPM_target - m_RPM_shooter) < range) {
-      return true;
+      Robot r = TheRobot.getInstance();
+
+      // If not targeting and shooter up to speed, then shoot! (return true)
+      if (r.m_drive.GetTargetingAligned() == false) {
+        return true;
+      }
+      
+      // Since we are targeting, hold off shooting until we are on target
+      // If on target and we are targeting than shoot!
+      return r.m_drive.GetTargetingAligned();
     } 
     
     return false;

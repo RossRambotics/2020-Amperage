@@ -20,7 +20,6 @@ import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
 // network tables
-import edu.wpi.first.networktables.NetworkTable;
 import frc.robot.helper.ShooterLookUp;
 
 public class Drive extends SubsystemBase {
@@ -32,6 +31,7 @@ public class Drive extends SubsystemBase {
 
 
   private boolean m_bTargeting = false;
+  private boolean m_bTargetingAligned = false;
   private double m_dTargetMaxPower = 0.4;
   private double m_dTargetMinPower = 0.1;
   private double m_dTargetSpinP = 0.3;
@@ -55,6 +55,8 @@ public class Drive extends SubsystemBase {
     // setup talon FXs
     m_leftMotor.setNeutralMode(NeutralMode.Brake);
     m_rightMotor.setNeutralMode(NeutralMode.Brake);
+    m_leftMotor.configOpenloopRamp(0.3);
+    m_rightMotor.configOpenloopRamp(0.3);
 
     m_driverStick = j;
 
@@ -155,7 +157,7 @@ public class Drive extends SubsystemBase {
         steer = targetAngle/45.0;
         if (steer > 1.0) steer = 1.0;
         if (steer < -1.0) steer = -1.0;
-        m_differentialDrive.arcadeDrive( dvalueLYAxis, steer);
+        m_differentialDrive.arcadeDrive(dvalueLYAxis, steer);
         break;
     }
 
@@ -175,6 +177,9 @@ public class Drive extends SubsystemBase {
   private void TargetDriveSpin(double targetAngle, double frame) {
     if (Math.abs(targetAngle) <= m_dTargetSpinDeadZone){
       m_differentialDrive.arcadeDrive(0, 0, false);
+      m_bTargetingAligned = true;
+    } else {
+      m_bTargetingAligned = false;
     }
 
 
@@ -215,8 +220,18 @@ public class Drive extends SubsystemBase {
 
 
   public void SetTargeting(boolean b) {
+    m_bTargetingAligned = false;
     m_bTargeting = b;
   }
+
+  public boolean GetTargetingAligned() {
+    return m_bTargetingAligned;
+  }
+  
+  public boolean GetTargeting() {
+    return m_bTargeting;
+  }
+
 
   //check to see if the intake arm is retracted 
   //
