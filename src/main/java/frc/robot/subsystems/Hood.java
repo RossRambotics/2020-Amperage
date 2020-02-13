@@ -16,6 +16,7 @@ import com.revrobotics.CANEncoder;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.CANPIDController;
 import com.revrobotics.ControlType;
+
 import frc.robot.TheRobot;
 import frc.robot.helper.ShooterLookUp;
 import frc.robot.helper.ShooterValueSet;

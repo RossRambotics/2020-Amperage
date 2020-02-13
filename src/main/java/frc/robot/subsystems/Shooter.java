@@ -164,6 +164,7 @@ public class Shooter extends SubsystemBase {
     //returns true if no jam detected
     //returns false if jam detected
     public boolean clear() {
+      // TODO implement this!
       return false;
     }
     

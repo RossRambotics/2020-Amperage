@@ -135,11 +135,4 @@ public class Intake extends SubsystemBase {
     return false;
   }
 
-  // shoots the ball
-  // returns false if intake is empty
-  // returns true if has ball in intake
-  public boolean shoot() {
-    return false;
-
-  }
 }

@@ -66,15 +66,9 @@ public class Robot extends TimedRobot {
   public CommandScheduler m_CMDScheduler = null;
 
   private static final String UNKNOWN = "Unknown";
+
   private final Timer m_timer = new Timer();
-  private Joystick m_stick = null;
  
-  // setup ultra sonic sensor
-  public AnalogInput ultrasonic0 = new AnalogInput(0);
-
-  // network table
-  private NetworkTable m_visionTable = null;
-
 
   /**
    * This function is run when the robot is first started up and should be used
@@ -93,21 +87,8 @@ public class Robot extends TimedRobot {
     m_CMDScheduler = CommandScheduler.getInstance();
 
     // initialize the subsystems
-    //m_TestMotor = new CANSparkMax(30, MotorType.kBrushless);
-    //final NetworkTableInstance networkTableInstance = NetworkTableInstance.create();
-    //networkTableInstance.startClient("10.32.1.105");
-    // System.out.println("Network Tables Connected? " + Boolean.toString(networkTableInstance.isConnected()));
-    //m_visionTable = networkTableInstance.getTable("ContourTable");
-    //m_drive.SetVisionTable(m_visionTable);
-    m_OI.SetDrive(m_drive);
-    //m_indexerbottomMotor = new CANSparkMax(30, MotorType.kBrushless);
-    //m_indexertopMotor = new CANSparkMax(30, MotorType.kBrushless);
-    //m_leftMotor = new CANSparkMax(30, MotorType.kBrushless);
-    //m_rightMotor = new CANSparkMax(30, MotorType.kBrushless);
-    m_stick = new Joystick(0);
-    //m_leftEncoder = m_leftMotor.getEncoder();
-    //m_rightEncoder = m_rightMotor.getEncoder();
-
+      m_OI.SetDrive(m_drive);
+  
     // add commands to Dashboard
     SmartDashboard.putData("Shoot!", new Shoot());
     
