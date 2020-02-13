@@ -19,7 +19,10 @@ public class Shoot extends CommandBase {
    */
   public Shoot() {
     // Use addRequirements() here to declare subsystem dependencies.
-  }
+    Robot r = TheRobot.getInstance();
+    this.addRequirements(r.m_indexer);
+    this.addRequirements(r.m_shooter);
+}
 
   // Called when the command is initially scheduled.
   @Override

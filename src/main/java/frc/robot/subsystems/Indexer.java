@@ -14,9 +14,18 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANEncoder;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
+// ultra sonic sensor classes
+import edu.wpi.first.wpilibj.AnalogInput;
+
+import frc.robot.commands.IndexerCheckForNewPowerCell;
+
 public class Indexer extends SubsystemBase {
   private CANSparkMax m_bottomMotor = null;
   private CANSparkMax m_topMotor = null;
+
+  // setup ultra sonic sensor
+  public AnalogInput m_Sensor_PC_Intake = new AnalogInput(0);  // intake has presented powercell to indexer
+  //public AnalogInput m_Sensor_PC_Capture = new AnalogInput(1); // ball as been captured in indexer
 
 
   /**
@@ -28,15 +37,31 @@ public class Indexer extends SubsystemBase {
     m_topMotor =  new CANSparkMax(4, MotorType.kBrushless);
     m_bottomMotor.restoreFactoryDefaults();
     m_topMotor.restoreFactoryDefaults();
-    m_topMotor.setInverted(true);
-    m_bottomMotor.setInverted(true);
+    m_topMotor.setInverted(false);
+    m_bottomMotor.setInverted(false);
     
   }
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    this.setDefaultCommand(new IndexerCheckForNewPowerCell());
   }
+
+  // returns true when the index should capture the powercell
+  // returns false when no powercell is present
+  public boolean SenseIntakePC() {
+    boolean b;
+
+    if (m_Sensor_PC_Intake.getValue() != 0) {
+      b = true;
+    } else {
+      b = false;
+    }
+    return b;
+  }
+
+
 
   // moves the balls to the next sensor
   // returns false if balls are still moving/inbetween
@@ -53,8 +78,8 @@ public class Indexer extends SubsystemBase {
   // returns true is all of the balls are out 
   public boolean shoot() {
     // set the indexer motors to run
-    m_bottomMotor.set(0.75);
-    m_topMotor.set(0.75);
+    //m_bottomMotor.set(0.75);
+    //m_topMotor.set(0.75);
 
     // TODO detect whether there are balls remaining
     return false;

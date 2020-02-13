@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.text.DecimalFormat;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
 // network tables
@@ -27,6 +28,9 @@ public class Drive extends SubsystemBase {
   private static DecimalFormat df3 = new DecimalFormat("#.###");
   private final WPI_TalonFX m_leftMotor = new WPI_TalonFX(21);
   private final WPI_TalonFX m_rightMotor = new WPI_TalonFX(22);
+
+
+
   private boolean m_bTargeting = false;
   private double m_dTargetMaxPower = 0.4;
   private double m_dTargetMinPower = 0.1;
@@ -48,7 +52,11 @@ public class Drive extends SubsystemBase {
    * Creates a new Drive.
    */
   public Drive(Joystick j) {
-      m_driverStick = j;
+    // setup talon FXs
+    m_leftMotor.setNeutralMode(NeutralMode.Brake);
+    m_rightMotor.setNeutralMode(NeutralMode.Brake);
+
+    m_driverStick = j;
 
       SmartDashboard.putNumber("Drive/Drive Style", m_DriveStyle);
       SmartDashboard.putNumber("Targeting/Max Power", m_dTargetMaxPower);

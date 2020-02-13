@@ -34,6 +34,7 @@ public class Shooter extends SubsystemBase {
   private double m_RPM_target = 5000;
 
   private double m_pid_kP, m_pid_kI, m_pid_kD, m_pid_kIz, m_pid_kFF;
+  private double m_dpid_kI_Modified;
   private double m_pid_kMaxOutput, m_pid_kMinOutput, m_pid_maxRPM;
   private boolean m_bTuning = false;
   private double m_dTuningRPM = 0;
@@ -57,6 +58,7 @@ public class Shooter extends SubsystemBase {
     // PID coefficients
     m_pid_kP = 5e-5; 
     m_pid_kI = 1e-6;
+    m_dpid_kI_Modified = setModifiedkI(m_RPM_target, m_pid_kI);
     m_pid_kD = 0; 
     m_pid_kIz = 0; 
     m_pid_kFF = 0; 
@@ -77,6 +79,7 @@ public class Shooter extends SubsystemBase {
     // display PID coefficients on SmartDashboard
     SmartDashboard.putNumber("Shooter/P Gain", m_pid_kP);
     SmartDashboard.putNumber("Shooter/I Gain", m_pid_kI);
+    SmartDashboard.putNumber("Shooter/I Gain Modified", m_dpid_kI_Modified);
     SmartDashboard.putNumber("Shooter/D Gain", m_pid_kD);
     SmartDashboard.putNumber("Shooter/I Zone", m_pid_kIz);
     SmartDashboard.putNumber("Shooter/Feed Forward", m_pid_kFF);
@@ -85,6 +88,16 @@ public class Shooter extends SubsystemBase {
     SmartDashboard.putBoolean("Shooter/Tuning Mode", m_bTuning);
     SmartDashboard.putNumber("Shooter/Tuning RPM", m_dTuningRPM);
 
+  }
+
+  public double setModifiedkI(Double shooterRPM, Double unmodifiedPIDkI)
+  {
+    double pidModifiedkI = (4000 / shooterRPM) * unmodifiedPIDkI;
+
+    if(pidModifiedkI < 0.0000001){pidModifiedkI = 0.0000001;}
+    if(pidModifiedkI > 0.0001){pidModifiedkI = 0.0001;}
+
+    return pidModifiedkI;
   }
 
   @Override
@@ -103,10 +116,9 @@ public class Shooter extends SubsystemBase {
     m_dTuningRPM = SmartDashboard.getNumber("Shooter/Tuning RPM", m_dTuningRPM);
 
 
-
     // if PID coefficients on SmartDashboard have changed, write new values to controller
     if((p !=  m_pid_kP)) { m_pidController.setP(p);  m_pid_kP = p; }
-    if((i !=  m_pid_kI)) { m_pidController.setI(i);  m_pid_kI = i; }
+    if((i !=  m_pid_kI)) { m_pid_kI = i; }
     if((d !=  m_pid_kD)) { m_pidController.setD(d);  m_pid_kD = d; }
     if((iz !=  m_pid_kIz)) { m_pidController.setIZone(iz);  m_pid_kIz = iz; }
     if((ff !=  m_pid_kFF)) { m_pidController.setFF(ff);  m_pid_kFF = ff; }
@@ -121,6 +133,12 @@ public class Shooter extends SubsystemBase {
     // Output to dashboard
     SmartDashboard.putNumber("Shooter/Current RPM", m_RPM_shooter);
     SmartDashboard.putNumber("Shooter/Target RPM", m_RPM_target);
+
+    m_dpid_kI_Modified = setModifiedkI(m_RPM_target, m_pid_kI);
+    m_pidController.setI(m_dpid_kI_Modified);
+
+    SmartDashboard.putNumber("Shooter/I Gain Modified", m_dpid_kI_Modified);
+
   }
 
   //shoots the balls 

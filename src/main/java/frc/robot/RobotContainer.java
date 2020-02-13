@@ -47,7 +47,7 @@ public class RobotContainer {
 
     // setup the shooter using the right trigger
     JoystickButton rightTrigger = new JoystickAnalogButton(m_Joystick1, 3); // the trigger associated with shooting
-    rightTrigger.whenHeld(new frc.robot.commands.Shoot().withTimeout(5.0));
+    rightTrigger.whenHeld(new frc.robot.commands.Shoot().withTimeout(10.0));
 
     // a button - capture
     JoystickButton aButton = new JoystickButton(m_Joystick1, 1); // the button associated while caputuring balls
@@ -65,7 +65,7 @@ public class RobotContainer {
 
     // b button - clear indexer
     JoystickButton bButton = new JoystickButton(m_Joystick1, 2); // the buttom runs the indexer
-    bButton.whileHeld(new frc.robot.commands.ClearIndexer());
+    bButton.whileHeld(new frc.robot.commands.ClearIndexer().withTimeout(0.1));
 
   }
 

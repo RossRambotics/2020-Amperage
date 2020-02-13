@@ -17,7 +17,9 @@ public class RunIndexer extends CommandBase {
    */
   public RunIndexer() {
     // Use addRequirements() here to declare subsystem dependencies.
-  }
+    Robot r = TheRobot.getInstance();
+    this.addRequirements(r.m_indexer);
+ }
 
   // Called when the command is initially scheduled.
   @Override
