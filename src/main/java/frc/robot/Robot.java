@@ -11,9 +11,10 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-
-
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 // add subsystems
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.ControlPanel;
@@ -95,7 +96,17 @@ public class Robot extends TimedRobot {
     SmartDashboard.putData("Commands/Extend Intake!", new ExtendIntake(m_indexer));
     SmartDashboard.putData("Commands/Indexer/CheckForNewPC!", new IndexerCheckForNewPowerCell(m_indexer));
     SmartDashboard.putData("Commands/Indexer/IndexNewPC!", new IndexNewPowerCell());
+    SmartDashboard.putData("Commands/Indexer/CompactIndexer!", new CompactIndexer(m_indexer));
     
+    CommandBase c = new SequentialCommandGroup(
+      new RetractIntake(), 
+      new WaitCommand(0.25), 
+      new ExtendIntake(m_indexer),
+      new CompactIndexer(m_indexer));
+
+      c.setName("Smash & Compact");
+      SmartDashboard.putData("Commands/Indexer/Smash & Compact!", c); 
+
     
   }
 

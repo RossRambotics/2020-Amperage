@@ -57,11 +57,16 @@ public class IndexerCheckForNewPowerCell extends CommandBase {
     // to index into therobot
     if (r.m_indexer.SenseIntakePC() == true) {
       TheRobot.log("Ball Found.");
-      r.m_CMDScheduler.schedule(new SequentialCommandGroup(
+      /*CommandBase c = new SequentialCommandGroup(
         new RetractIntake(), 
         new WaitCommand(0.25), 
         new ExtendIntake(r.m_indexer),
-        new CompactIndexer(r.m_indexer)));
+        new WaitCommand(0.25),
+        new CompactIndexer(r.m_indexer)
+        ));*/
+      
+        CommandBase c = new CompactIndexer(r.m_indexer);
+      r.m_CMDScheduler.schedule(c);
     }
   }
 
@@ -86,6 +91,6 @@ public class IndexerCheckForNewPowerCell extends CommandBase {
       TheRobot.log("Check Intake... The Intake is NOT extended.");
     }
     
-    return b;
+    return false;
   }
 }

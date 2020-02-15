@@ -7,7 +7,9 @@
 
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 // Rev Spark Max classes
@@ -25,20 +27,20 @@ import frc.robot.commands.IndexerCheckForNewPowerCell;
 public class Indexer extends SubsystemBase {
   private double m_TopMotorPower = 0.25;
   private double m_CompactPower = 0.10;
-  private double m_dCompactRotations = 1.0;
+  private double m_dCompactRotations = 2.0;
   private CANSparkMax m_bottomMotor = null;
   private CANSparkMax m_topMotor = null;
   private CANEncoder m_encoderBottom = null;
-  private CANPIDController m_pidControllerBottom = null;  
+  private CANPIDController m_pidControllerBottom = null;
   private CANEncoder m_encoderTop = null;
   private CANPIDController m_pidControllerTop = null;
   private double m_pid_Kp = 0.2;
 
   // setup ultra sonic sensor
-  public AnalogInput m_Sensor_PC_Intake = new AnalogInput(0);  // intake has presented powercell to indexer
-  public AnalogInput m_Sensor_PC_Index0 = new AnalogInput(1);  // intake has presented powercell to indexer
-  //public AnalogInput m_Sensor_PC_Capture = new AnalogInput(1); // ball as been captured in indexer
-
+  public AnalogInput m_Sensor_PC_Intake = new AnalogInput(0); // intake has presented powercell to indexer
+  public AnalogInput m_Sensor_PC_Index0 = new AnalogInput(1); // intake has presented powercell to indexer
+  // public AnalogInput m_Sensor_PC_Capture = new AnalogInput(1); // ball as been
+  // captured in indexer
 
   /**
    * Creates a new Indexer.
@@ -73,7 +75,9 @@ public class Indexer extends SubsystemBase {
     SmartDashboard.putNumber("Indexer/Compact Encoder Bottom", m_encoderBottom.getPosition());
     SmartDashboard.putNumber("Indexer/Compact Kp", m_pid_Kp);
 
-    this.setDefaultCommand(new IndexerCheckForNewPowerCell(this));
+    this.setDefaultCommand(new SequentialCommandGroup(
+      new WaitCommand(0.25), new IndexerCheckForNewPowerCell(this)
+    ));
 
   }
 
@@ -167,12 +171,15 @@ public class Indexer extends SubsystemBase {
   return false;
   }
 
+  public void resetEncoders() {
+    m_encoderTop.setPosition(0);
+    m_encoderBottom.setPosition(0);
+  }
 
   // move the balls using the top and bottom motors
   public void compact() {
     // reset encoders and advance distance
-    m_encoderTop.setPosition(0);
-    m_encoderBottom.setPosition(0);
+
     m_pidControllerBottom.setReference(m_dCompactRotations, ControlType.kPosition);
     m_pidControllerTop.setReference(m_dCompactRotations, ControlType.kPosition);
   }
