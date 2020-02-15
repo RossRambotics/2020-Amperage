@@ -19,15 +19,16 @@ public class Shoot extends CommandBase {
    */
   public Shoot() {
     // Use addRequirements() here to declare subsystem dependencies.
-    Robot r = TheRobot.getInstance();
-    this.addRequirements(r.m_indexer);
-    this.addRequirements(r.m_shooter);
+
 }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
     TheRobot.log("Shoot Initializing...");
+    Robot r = TheRobot.getInstance();
+    addRequirements(r.m_indexer);
+    addRequirements(r.m_shooter);
   }
 
   // Called every time the scheduler runs while the command is scheduled.

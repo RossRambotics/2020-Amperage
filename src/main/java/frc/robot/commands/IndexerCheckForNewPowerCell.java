@@ -8,6 +8,9 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.Subsystem;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Robot;
 import frc.robot.TheRobot;
 
@@ -17,43 +20,72 @@ import frc.robot.TheRobot;
 */
 
 public class IndexerCheckForNewPowerCell extends CommandBase {
+
   /**
    * Creates a new IndexerCheckForNewPowerCell.
    */
-  public IndexerCheckForNewPowerCell() {
+  public IndexerCheckForNewPowerCell(Subsystem indexer) {
     // Use addRequirements() here to declare subsystem dependencies.
+    
     Robot r = TheRobot.getInstance();
-    this.addRequirements(r.m_indexer);
+    if (r == null) TheRobot.log("The Robot is NULL.");
+    if (r.m_indexer == null) TheRobot.log("The indexer is NULL.");
 
+    // adds the indexer as a requirement
+    this.addRequirements(indexer);
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
+
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
+
     Robot r = TheRobot.getInstance();
 
-    // TODO --- Check whether the intake is extended?
+    // Do nothing if intake is not extended
+    if (r.m_intake.isExtended() == false) {
+      return;
+    }
+    TheRobot.log("Checking for ball...");
 
     // Check to see if we see a power cell that we need 
     // to index into therobot
     if (r.m_indexer.SenseIntakePC() == true) {
-      r.m_CMDScheduler.schedule(new IndexNewPowerCell());
+      TheRobot.log("Ball Found.");
+      r.m_CMDScheduler.schedule(new SequentialCommandGroup(
+        new RetractIntake(), 
+        new WaitCommand(0.25), 
+        new ExtendIntake(r.m_indexer),
+        new CompactIndexer(r.m_indexer)));
     }
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
+    if (interrupted)
+      TheRobot.log("Checking for new power cell ended normally.");
+    else
+      TheRobot.log("Checking for new power cell INTERRUPTED.");
   }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return false;
+    Robot r = TheRobot.getInstance();
+    boolean b = r.m_intake.isExtended();
+
+    if (b) {
+      TheRobot.log("Check Intake... The Intake is extended.");
+    } else {
+      TheRobot.log("Check Intake... The Intake is NOT extended.");
+    }
+    
+    return b;
   }
 }

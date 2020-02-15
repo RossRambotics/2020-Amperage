@@ -17,14 +17,14 @@ public class ClearIndexer extends CommandBase {
    */
   public ClearIndexer() {
     // Use addRequirements() here to declare subsystem dependencies.
-    Robot r = TheRobot.getInstance();
-    this.addRequirements(r.m_indexer);
-   }
+    }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
     Robot r = TheRobot.getInstance();
+
+    this.addRequirements(r.m_indexer);
     r.m_indexer.clear();
   }
 

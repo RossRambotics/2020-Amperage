@@ -13,18 +13,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
-import java.io.*;
-
-import javax.lang.model.util.ElementScanner6;
-
-// Rev Spark Max classes
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANEncoder;
-import com.revrobotics.CANSparkMaxLowLevel.MotorType;
-import edu.wpi.first.wpilibj.Joystick;
-
-// ultra sonic snsor classes
-import edu.wpi.first.wpilibj.AnalogInput;
 
 // add subsystems
 import frc.robot.subsystems.Climber;
@@ -35,11 +23,8 @@ import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.PowerPortTargeter;
 import frc.robot.subsystems.Hood;
-import frc.robot.commands.Shoot;
+import frc.robot.commands.*;
 
-// network tables
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableInstance;
 
 
 /**
@@ -54,21 +39,25 @@ public class Robot extends TimedRobot {
   private RobotContainer m_robotContainer = null;
 
   // create the subsystems
-  public OI m_OI = new OI();
-  public Climber m_climber = new Climber();
-  public ControlPanel m_controlPanel = new ControlPanel(); 
-  public Drive m_drive = new Drive(m_OI.getDriverStick());
-  public Indexer m_indexer = new Indexer();
-  public Intake m_intake = new Intake();
-  public Shooter m_shooter = new Shooter();
-  public PowerPortTargeter m_powerPowerTargeter = new PowerPortTargeter();
-  public Hood m_hood = new Hood();
+  public OI m_OI = null;
+  public Climber m_climber = null;
+  public ControlPanel m_controlPanel = null;
+  public Drive m_drive = null;
+  public Indexer m_indexer = null;
+  public Intake m_intake = null;
+  public Shooter m_shooter = null;
+  public PowerPortTargeter m_powerPowerTargeter = null;
+  public Hood m_hood = null;
   public CommandScheduler m_CMDScheduler = null;
 
   private static final String UNKNOWN = "Unknown";
 
   private final Timer m_timer = new Timer();
  
+
+  public Robot() {
+    TheRobot.SetInstance(this);
+  }
 
   /**
    * This function is run when the robot is first started up and should be used
@@ -78,10 +67,21 @@ public class Robot extends TimedRobot {
   public void robotInit() 
   {
     TheRobot.log("robotInit.");
-    m_robotContainer = new RobotContainer();
+
+    m_OI = new OI();
+    m_climber = new Climber();
+    m_controlPanel = new ControlPanel(); 
+    m_drive = new Drive(m_OI.getDriverStick());
+    m_intake = new Intake();
+    m_indexer = new Indexer();
+    m_shooter = new Shooter();
+    m_powerPowerTargeter = new PowerPortTargeter();
+    m_hood = new Hood();
+  
+
 
     // Setup the singleton for easy access to the robot and subsystems
-    TheRobot.SetInstance(this);
+    m_robotContainer = new RobotContainer();
 
     // Get the scheduler
     m_CMDScheduler = CommandScheduler.getInstance();
@@ -90,7 +90,12 @@ public class Robot extends TimedRobot {
       m_OI.SetDrive(m_drive);
   
     // add commands to Dashboard
-    SmartDashboard.putData("Shoot!", new Shoot());
+    SmartDashboard.putData("Commands/Shoot!", new Shoot());
+    SmartDashboard.putData("Commands/Retract Intake!", new RetractIntake());    
+    SmartDashboard.putData("Commands/Extend Intake!", new ExtendIntake(m_indexer));
+    SmartDashboard.putData("Commands/Indexer/CheckForNewPC!", new IndexerCheckForNewPowerCell(m_indexer));
+    SmartDashboard.putData("Commands/Indexer/IndexNewPC!", new IndexNewPowerCell());
+    
     
   }
 
@@ -132,14 +137,17 @@ public class Robot extends TimedRobot {
   public void teleopPeriodic() {
 
     // call the periodic methods on all of the subsystems
+    /*
     m_climber.periodic();
     m_controlPanel.periodic();
     m_drive.periodic();
     m_indexer.periodic();
-    //m_intake.periodic();
     m_shooter.periodic();
     m_OI.periodic();
     m_hood.periodic();
+    m_intake.periodic();
+    */
+
 
     if (true)
       return;

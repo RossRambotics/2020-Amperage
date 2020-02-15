@@ -51,9 +51,8 @@ public class RobotContainer {
 
     // a button - capture
     JoystickButton aButton = new JoystickButton(m_Joystick1, 1); // the button associated while caputuring balls
-    aButton.whenPressed(new frc.robot.commands.DeployIntake());
     aButton.whileHeld(new frc.robot.commands.IntakeCapture());
-    aButton.whenReleased(new frc.robot.commands.RetractIntake());
+    //aButton.whileHeld(new frc.robot.commands.IndexerCheckForNewPowerCell());
 
     // left trigger - activate targeting
     JoystickButton leftTrigger = new JoystickAnalogButton(m_Joystick1, 2); // the trigger associated with targeting
