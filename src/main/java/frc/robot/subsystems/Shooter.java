@@ -32,9 +32,14 @@ public class Shooter extends SubsystemBase {
 
   private double m_RPM_shooter = 0;
   private double m_RPM_target = 5000;
+  private double m_RPM_target_range = 100;
 
   private double m_pid_kP, m_pid_kI, m_pid_kD, m_pid_kIz, m_pid_kFF;
+  private double m_dpid_kI_Modified;
   private double m_pid_kMaxOutput, m_pid_kMinOutput, m_pid_maxRPM;
+  private boolean m_bTuning = false;
+  private double m_dTuningRPM = 0;
+  
 
   /**
    * Creates a new Shooter.
@@ -54,6 +59,7 @@ public class Shooter extends SubsystemBase {
     // PID coefficients
     m_pid_kP = 5e-5; 
     m_pid_kI = 1e-6;
+    m_dpid_kI_Modified = setModifiedkI(m_RPM_target, m_pid_kI);
     m_pid_kD = 0; 
     m_pid_kIz = 0; 
     m_pid_kFF = 0; 
@@ -72,14 +78,28 @@ public class Shooter extends SubsystemBase {
     m_lookUpTable = new ShooterLookUp();
 
     // display PID coefficients on SmartDashboard
-    SmartDashboard.putNumber("Shooter P Gain", m_pid_kP);
-    SmartDashboard.putNumber("Shooter I Gain", m_pid_kI);
-    SmartDashboard.putNumber("Shooter D Gain", m_pid_kD);
-    SmartDashboard.putNumber("Shooter I Zone", m_pid_kIz);
-    SmartDashboard.putNumber("Shooter Feed Forward", m_pid_kFF);
-    SmartDashboard.putNumber("Shooter Max Output", m_pid_kMaxOutput);
-    SmartDashboard.putNumber("Shooter Min Output", m_pid_kMinOutput);
+    SmartDashboard.putNumber("Shooter/P Gain", m_pid_kP);
+    SmartDashboard.putNumber("Shooter/I Gain", m_pid_kI);
+    SmartDashboard.putNumber("Shooter/I Gain Modified", m_dpid_kI_Modified);
+    SmartDashboard.putNumber("Shooter/D Gain", m_pid_kD);
+    SmartDashboard.putNumber("Shooter/I Zone", m_pid_kIz);
+    SmartDashboard.putNumber("Shooter/Feed Forward", m_pid_kFF);
+    SmartDashboard.putNumber("Shooter/Max Output", m_pid_kMaxOutput);
+    SmartDashboard.putNumber("Shooter/Min Output", m_pid_kMinOutput);
+    SmartDashboard.putBoolean("Shooter/Tuning Mode", m_bTuning);
+    SmartDashboard.putNumber("Shooter/Tuning RPM", m_dTuningRPM); 
+    SmartDashboard.putNumber("Shooter/RPM Target Range", m_RPM_target_range);
 
+  }
+
+  public double setModifiedkI(Double shooterRPM, Double unmodifiedPIDkI)
+  {
+    double pidModifiedkI = (4000 / shooterRPM) * unmodifiedPIDkI;
+
+    if(pidModifiedkI < 0.0000001){pidModifiedkI = 0.0000001;}
+    if(pidModifiedkI > 0.0001){pidModifiedkI = 0.0001;}
+
+    return pidModifiedkI;
   }
 
   @Override
@@ -87,17 +107,20 @@ public class Shooter extends SubsystemBase {
     // This method will be called once per scheduler run
 
     // read PID coefficients from SmartDashboard
-    double p = SmartDashboard.getNumber("Shooter P Gain", 0);
-    double i = SmartDashboard.getNumber("Shooter I Gain", 0);
-    double d = SmartDashboard.getNumber("Shooter D Gain", 0);
-    double iz = SmartDashboard.getNumber("Shooter I Zone", 0);
-    double ff = SmartDashboard.getNumber("Shooter Feed Forward", 0);
-    double max = SmartDashboard.getNumber("Shooter Max Output", 0);
-    double min = SmartDashboard.getNumber("Shooter Min Output", 0);
+    double p = SmartDashboard.getNumber("Shooter/P Gain", 0);
+    double i = SmartDashboard.getNumber("Shooter/I Gain", 0);
+    double d = SmartDashboard.getNumber("Shooter/D Gain", 0);
+    double iz = SmartDashboard.getNumber("Shooter/I Zone", 0);
+    double ff = SmartDashboard.getNumber("Shooter/Feed Forward", 0);
+    double max = SmartDashboard.getNumber("Shooter/Max Output", 0);
+    double min = SmartDashboard.getNumber("Shooter/Min Output", 0);
+    m_bTuning = SmartDashboard.getBoolean("Shooter/Tuning Mode", m_bTuning);
+    m_dTuningRPM = SmartDashboard.getNumber("Shooter/Tuning RPM", m_dTuningRPM);
+    m_RPM_target_range =  SmartDashboard.getNumber("Shooter/RPM Target Range", 0);
 
     // if PID coefficients on SmartDashboard have changed, write new values to controller
     if((p !=  m_pid_kP)) { m_pidController.setP(p);  m_pid_kP = p; }
-    if((i !=  m_pid_kI)) { m_pidController.setI(i);  m_pid_kI = i; }
+    if((i !=  m_pid_kI)) { m_pid_kI = i; }
     if((d !=  m_pid_kD)) { m_pidController.setD(d);  m_pid_kD = d; }
     if((iz !=  m_pid_kIz)) { m_pidController.setIZone(iz);  m_pid_kIz = iz; }
     if((ff !=  m_pid_kFF)) { m_pidController.setFF(ff);  m_pid_kFF = ff; }
@@ -110,8 +133,14 @@ public class Shooter extends SubsystemBase {
     m_RPM_shooter = Math.abs(m_encoder1.getVelocity());
 
     // Output to dashboard
-    SmartDashboard.putNumber("Shooter Current RPM", m_RPM_shooter);
-    SmartDashboard.putNumber("Shooter Target RPM", m_RPM_target);
+    SmartDashboard.putNumber("Shooter/Current RPM", m_RPM_shooter);
+    SmartDashboard.putNumber("Shooter/Target RPM", m_RPM_target);
+
+    m_dpid_kI_Modified = setModifiedkI(m_RPM_target, m_pid_kI);
+    m_pidController.setI(m_dpid_kI_Modified);
+
+    SmartDashboard.putNumber("Shooter/I Gain Modified", m_dpid_kI_Modified);
+
   }
 
   //shoots the balls 
@@ -135,6 +164,7 @@ public class Shooter extends SubsystemBase {
     //returns true if no jam detected
     //returns false if jam detected
     public boolean clear() {
+      // TODO implement this!
       return false;
     }
     
@@ -157,16 +187,25 @@ public class Shooter extends SubsystemBase {
   public boolean ready(ShooterValueSet m_Values) {
     // set the target RPM
     //m_RPM_target = m_Values.shooterRPM;
-    m_RPM_target = 5000.0;
+    m_RPM_target = m_dTuningRPM;
 
     // set the PID Controller to hit the RPM
     m_pidController.setReference(m_RPM_target, ControlType.kVelocity);
     TheRobot.log("Shooter ready RPM_target:" + TheRobot.toString(m_RPM_target));
 
     // See if motor RPM are within range tolerance
-    double range = 200;
+    double range = m_RPM_target_range;
     if (Math.abs(m_RPM_target - m_RPM_shooter) < range) {
-      return true;
+      Robot r = TheRobot.getInstance();
+
+      // If not targeting and shooter up to speed, then shoot! (return true)
+      if (r.m_drive.GetTargetingAligned() == false) {
+        return true;
+      }
+      
+      // Since we are targeting, hold off shooting until we are on target
+      // If on target and we are targeting than shoot!
+      return r.m_drive.GetTargetingAligned();
     } 
     
     return false;

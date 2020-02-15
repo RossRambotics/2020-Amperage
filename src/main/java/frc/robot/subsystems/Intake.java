@@ -7,6 +7,8 @@
 
 package frc.robot.subsystems;
 
+import frc.robot.TheRobot;
+
 import com.revrobotics.CANEncoder;
 import com.revrobotics.CANPIDController;
 import com.revrobotics.CANSparkMax;
@@ -19,7 +21,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Intake extends SubsystemBase {
-  private DoubleSolenoid intakeSolenoid = new DoubleSolenoid(15, 0, 1);// creates the solenoid on CAN id 15
+  private DoubleSolenoid intakeSolenoid = new DoubleSolenoid(31, 0, 1);// creates the solenoid on CAN id 15
   private CANSparkMax intakeMotor = null;
   private CANEncoder intakeEncoder = null;
   private CANPIDController intakePIDController = null;
@@ -32,14 +34,21 @@ public class Intake extends SubsystemBase {
   private Double pid_kMAX;
   private Double pid_kMIN;
 
-  private Double captureSpeed = 0.0; // the capture speed for the intake in RPM
+  private Double captureSpeed = 0.25; // the capture speed for the intake in RPM
+  private boolean m_bExtended = false;
 
   public Intake() {
-    intakeMotor = new CANSparkMax(6, MotorType.kBrushless);
+    intakeMotor = new CANSparkMax(11, MotorType.kBrushless);
+    intakeMotor.restoreFactoryDefaults();
     intakeEncoder = new CANEncoder(intakeMotor);
-    intakeEncoder.setPosition(0);
-    intakePIDController = intakeMotor.getPIDController();
 
+    
+    intakeSolenoid.set(Value.kForward); // retract the intake
+
+    intakeEncoder.setPosition(0);
+    SmartDashboard.putNumber("Intake/CaptureSpeed", captureSpeed);
+   /* intakePIDController = intakeMotor.getPIDController();
+  
     pid_kP = 0.0001;
     pid_kI = 0.0;
     pid_kD = 0.0;
@@ -66,10 +75,16 @@ public class Intake extends SubsystemBase {
     SmartDashboard.putNumber("Intake/pid_kMAX", pid_kMAX);
     SmartDashboard.putNumber("Intake/pid_kMIN", pid_kMIN);
     SmartDashboard.putNumber("Intake/intakeMotor_Power", intakeMotor.get());
+    */
   }
 
   @Override
   public void periodic() {
+    SmartDashboard.putNumber("Intake/intakeMotor_Power", intakeMotor.get());
+    SmartDashboard.putNumber("Intake/intakeMotor Current", intakeMotor.getOutputCurrent());
+    captureSpeed = SmartDashboard.getNumber("Intake/CaptureSpeed", 0);
+
+    if (true) return;
     // updates SmartDashbaord linked variables as needed
     if (captureSpeed != SmartDashboard.getNumber("Intake/CaptureSpeed", captureSpeed)) {
       captureSpeed = SmartDashboard.getNumber("Intake/CaptureSpeed", captureSpeed);
@@ -101,28 +116,35 @@ public class Intake extends SubsystemBase {
       intakePIDController.setOutputRange(pid_kMIN, pid_kMAX);
     }
 
-    SmartDashboard.putNumber("Intake/intakeMotor_Power", intakeMotor.get());
+
     // This method will be called once per scheduler run
   }
 
   // retracts the intake
   public void retract() {
-    intakeSolenoid.set(Value.kReverse);
+    intakeSolenoid.set(Value.kForward);
+    m_bExtended = false;
   }
 
   // extends the intake
   public void extend() {
-    intakeSolenoid.set(Value.kForward);
+    intakeSolenoid.set(Value.kReverse);
+    m_bExtended = true;
   }
 
   // spins the intake to capture a ball
   public void capture() {
-    intakePIDController.setReference(captureSpeed, ControlType.kVelocity);
+
+    //intakePIDController.setReference(captureSpeed, ControlType.kVelocity);
+    TheRobot.log("Starting Intake Motor");
+    intakeMotor.set(captureSpeed);
+
   }
 
   // Stops the capture process
   public void stopCapture() {
-    intakePIDController.setReference(0, ControlType.kVelocity);
+    //intakePIDController.setReference(0, ControlType.kVelocity);
+    intakeMotor.set(0.0);
   }
 
   // reverse spins the intake in case of jam
@@ -132,11 +154,9 @@ public class Intake extends SubsystemBase {
     return false;
   }
 
-  // shoots the ball
-  // returns false if intake is empty
-  // returns true if has ball in intake
-  public boolean shoot() {
-    return false;
+public boolean isExtended() {
+  
+	return m_bExtended;
+}
 
-  }
 }

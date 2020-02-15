@@ -5,19 +5,17 @@
 /* the project.                                                               */
 /*----------------------------------------------------------------------------*/
 
-
 package frc.robot.commands;
 
+import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Robot;
 import frc.robot.TheRobot;
 
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-
-// NOTE:  Consider using this command inline, rather than writing a subclass.  For more
-// information, see:
-// https://docs.wpilib.org/en/latest/docs/software/commandbased/convenience-features.html
-public class RetractIntake extends InstantCommand {
-  public RetractIntake() {
+public class Target extends CommandBase {
+  /**
+   * Creates a new Target.
+   */
+  public Target() {
     // Use addRequirements() here to declare subsystem dependencies.
   }
 
@@ -25,10 +23,26 @@ public class RetractIntake extends InstantCommand {
   @Override
   public void initialize() {
     Robot r = TheRobot.getInstance();
-    
-    
-    r.m_intake.retract(); 
-    TheRobot.log("Retract Command Completed.");
+    r.m_drive.SetTargeting(true);
+    TheRobot.log("Starting Targeting.");
+  }
 
+  // Called every time the scheduler runs while the command is scheduled.
+  @Override
+  public void execute() {
+  }
+
+  // Called once the command ends or is interrupted.
+  @Override
+  public void end(boolean interrupted) {
+    Robot r = TheRobot.getInstance();
+    r.m_drive.SetTargeting(false);
+    TheRobot.log("Ending Targeting.");
+  }
+
+  // Returns true when the command should end.
+  @Override
+  public boolean isFinished() {
+    return false;
   }
 }

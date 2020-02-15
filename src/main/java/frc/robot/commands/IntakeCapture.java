@@ -14,14 +14,20 @@ public class IntakeCapture extends CommandBase {
     }
 
     @Override
-    public void initialize() { // frist timethe command was scheduled
+    public void initialize() { // frist time the command was scheduled
         TheRobot.log("IntakeCapture Initializing...");
+        Robot r = TheRobot.getInstance();
+
+        // use Command because need to coordinate with indexer
+        r.m_CMDScheduler.schedule(new ExtendIntake(r.m_indexer)); 
     }
 
     @Override
     public void execute() { // when command is running called repeatedly -- stop by changing m_finished
-      Robot r = TheRobot.getInstance();
-      r.m_intake.capture();
+        Robot r = TheRobot.getInstance();
+      
+ 
+        r.m_intake.capture();
     }
 
     // Called once the command ends or is interrupted.
@@ -35,6 +41,7 @@ public class IntakeCapture extends CommandBase {
 
         Robot r = TheRobot.getInstance();
         r.m_intake.stopCapture();
+        r.m_intake.retract();  
     }
 
     @Override
