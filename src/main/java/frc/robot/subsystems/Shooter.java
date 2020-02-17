@@ -38,7 +38,7 @@ public class Shooter extends SubsystemBase {
   private double m_dpid_kI_Modified;
   private double m_pid_kMaxOutput, m_pid_kMinOutput, m_pid_maxRPM;
   private boolean m_bTuning = false;
-  private double m_dTuningRPM = 0;
+  private double m_dTuningRPM = 4000;
   
 
   /**
@@ -57,12 +57,12 @@ public class Shooter extends SubsystemBase {
     m_pidController = m_motor1.getPIDController();
 
     // PID coefficients
-    m_pid_kP = 5e-5; 
-    m_pid_kI = 1e-6;
+    m_pid_kP = 1e-4; 
+    m_pid_kI = 1.75e-7;
     m_dpid_kI_Modified = setModifiedkI(m_RPM_target, m_pid_kI);
-    m_pid_kD = 0; 
+    m_pid_kD = 0.50; 
     m_pid_kIz = 0; 
-    m_pid_kFF = 0; 
+    m_pid_kFF = 6e-5; 
     m_pid_kMaxOutput = 1; 
     m_pid_kMinOutput = -1;
     m_pid_maxRPM = 5700;
@@ -149,7 +149,13 @@ public class Shooter extends SubsystemBase {
  
     // get distance to target
     ShooterValueSet m_values = m_lookUpTable.getCurrentValues(true);
-    System.out.println(m_values);
+    System.out.println(m_values.shooterRPM);
+    TheRobot.log("Target RPM: " 
+      + TheRobot.toString(m_values.shooterRPM.doubleValue())
+      + " Target Hood: "
+      + TheRobot.toString(m_values.hoodAngle.doubleValue())
+      );
+
     // tell shooter to come up to target speed based on distance  
     if (r.m_shooter.ready(m_values)) {
       // start the indexer
@@ -164,19 +170,23 @@ public class Shooter extends SubsystemBase {
     //returns true if no jam detected
     //returns false if jam detected
     public boolean clear() {
-      // TODO implement this!
+      m_motor1.set(-0.20);
       return false;
+    }
+
+        //runs the shooter backwards in case of a jam
+    //returns true if no jam detected
+    //returns false if jam detected
+    public void compact() {
+      m_motor1.set(-0.20);
     }
     
     public void stop() {
       // stops the shooter motors
       m_motor1.set(0);
 
-      // also make sure the indexer stops
-      Robot r = TheRobot.getInstance();
-      //r.m_indexer.stop();
-
       // retract the hood
+      Robot r = TheRobot.getInstance();
       r.m_hood.retract();
     }
 
@@ -186,8 +196,8 @@ public class Shooter extends SubsystemBase {
   // returns false if the shooter is not at target speed
   public boolean ready(ShooterValueSet m_Values) {
     // set the target RPM
-    //m_RPM_target = m_Values.shooterRPM;
-    m_RPM_target = m_dTuningRPM;
+    m_RPM_target = m_Values.shooterRPM;
+    //m_RPM_target = m_dTuningRPM;
 
     // set the PID Controller to hit the RPM
     m_pidController.setReference(m_RPM_target, ControlType.kVelocity);

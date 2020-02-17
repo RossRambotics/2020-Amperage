@@ -4,30 +4,35 @@ import frc.robot.Robot;
 import frc.robot.TheRobot;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Subsystem;
 
 public class IntakeCapture extends CommandBase {
 
     private boolean m_finished = false;
 
-    public IntakeCapture() { // when instance of command is created
-
+    public IntakeCapture(Subsystem intake) { // when instance of command is created
+        this.addRequirements(intake);
     }
 
     @Override
     public void initialize() { // frist time the command was scheduled
         TheRobot.log("IntakeCapture Initializing...");
         Robot r = TheRobot.getInstance();
+        if (r.m_intake.isExtended()) {
+            m_finished = false;
+            r.m_intake.capture();
 
-        // use Command because need to coordinate with indexer
-        r.m_CMDScheduler.schedule(new ExtendIntake(r.m_indexer)); 
+        } else
+            m_finished = true;
     }
 
     @Override
     public void execute() { // when command is running called repeatedly -- stop by changing m_finished
         Robot r = TheRobot.getInstance();
-      
- 
-        r.m_intake.capture();
+        if (!r.m_intake.isExtended()) {
+            m_finished = true;
+        }
+       
     }
 
     // Called once the command ends or is interrupted.
@@ -41,7 +46,6 @@ public class IntakeCapture extends CommandBase {
 
         Robot r = TheRobot.getInstance();
         r.m_intake.stopCapture();
-        r.m_intake.retract();  
     }
 
     @Override

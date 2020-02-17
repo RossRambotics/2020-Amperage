@@ -34,7 +34,7 @@ public class Drive extends SubsystemBase {
   private boolean m_bTargetingAligned = false;
   private double m_dTargetMaxPower = 0.4;
   private double m_dTargetMinPower = 0.1;
-  private double m_dTargetSpinP = 0.3;
+  private double m_dTargetSpinP = 0.6;
   private double m_dTargetSpinDeadZone = 1.0;
 
   private ShooterLookUp m_lookUpTable = null; // look up table for shooter values
@@ -51,14 +51,14 @@ public class Drive extends SubsystemBase {
   /**
    * Creates a new Drive.
    */
-  public Drive(Joystick j) {
+  public Drive() {
     // setup talon FXs
     m_leftMotor.setNeutralMode(NeutralMode.Brake);
     m_rightMotor.setNeutralMode(NeutralMode.Brake);
     m_leftMotor.configOpenloopRamp(0.3);
     m_rightMotor.configOpenloopRamp(0.3);
 
-    m_driverStick = j;
+    m_driverStick =  new Joystick(0);
 
       SmartDashboard.putNumber("Drive/Drive Style", m_DriveStyle);
       SmartDashboard.putNumber("Targeting/Max Power", m_dTargetMaxPower);

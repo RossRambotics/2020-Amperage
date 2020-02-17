@@ -69,10 +69,9 @@ public class Robot extends TimedRobot {
   {
     TheRobot.log("robotInit.");
 
-    m_OI = new OI();
-    m_climber = new Climber();
+    m_climber = null;//new Climber();
     m_controlPanel = new ControlPanel(); 
-    m_drive = new Drive(m_OI.getDriverStick());
+    m_drive = new Drive();
     m_intake = new Intake();
     m_indexer = new Indexer();
     m_shooter = new Shooter();
@@ -88,21 +87,28 @@ public class Robot extends TimedRobot {
     m_CMDScheduler = CommandScheduler.getInstance();
 
     // initialize the subsystems
-      m_OI.SetDrive(m_drive);
   
     // add commands to Dashboard
-    SmartDashboard.putData("Commands/Shoot!", new Shoot());
+    CommandBase c;
+    SmartDashboard.putData("Commands/Shoot!", new Shoot(m_indexer));
     SmartDashboard.putData("Commands/Retract Intake!", new RetractIntake());    
     SmartDashboard.putData("Commands/Extend Intake!", new ExtendIntake(m_indexer));
     SmartDashboard.putData("Commands/Indexer/CheckForNewPC!", new IndexerCheckForNewPowerCell(m_indexer));
     SmartDashboard.putData("Commands/Indexer/IndexNewPC!", new IndexNewPowerCell());
     SmartDashboard.putData("Commands/Indexer/CompactIndexer!", new CompactIndexer(m_indexer));
+    SmartDashboard.putData("Commands/Indexer/CompactShooter!", new CompactShooter().withTimeout(0.2));
     
-    CommandBase c = new SequentialCommandGroup(
+    c = new ReverseCompactIndexer(m_indexer).withTimeout(0.5);
+    c.setName("Reverse Compact");
+    SmartDashboard.putData("Commands/Indexer/RevCompactIndexer!", c);
+    
+    c = new SequentialCommandGroup(
       new RetractIntake(), 
       new WaitCommand(0.25), 
       new ExtendIntake(m_indexer),
-      new CompactIndexer(m_indexer));
+      new CompactIndexer(m_indexer),
+      new WaitCommand(0.25)
+      );
 
       c.setName("Smash & Compact");
       SmartDashboard.putData("Commands/Indexer/Smash & Compact!", c); 

@@ -26,7 +26,7 @@ public class RetractIntake extends InstantCommand {
   public void initialize() {
     Robot r = TheRobot.getInstance();
     
-    
+    r.m_intake.stopCapture();
     r.m_intake.retract(); 
     TheRobot.log("Retract Command Completed.");
 

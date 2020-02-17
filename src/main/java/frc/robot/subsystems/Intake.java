@@ -47,6 +47,7 @@ public class Intake extends SubsystemBase {
 
     intakeEncoder.setPosition(0);
     SmartDashboard.putNumber("Intake/CaptureSpeed", captureSpeed);
+    SmartDashboard.putBoolean("Intake/Extended?", m_bExtended);
    /* intakePIDController = intakeMotor.getPIDController();
   
     pid_kP = 0.0001;
@@ -82,6 +83,7 @@ public class Intake extends SubsystemBase {
   public void periodic() {
     SmartDashboard.putNumber("Intake/intakeMotor_Power", intakeMotor.get());
     SmartDashboard.putNumber("Intake/intakeMotor Current", intakeMotor.getOutputCurrent());
+    SmartDashboard.putBoolean("Intake/Extended?", m_bExtended);
     captureSpeed = SmartDashboard.getNumber("Intake/CaptureSpeed", 0);
 
     if (true) return;
@@ -150,8 +152,10 @@ public class Intake extends SubsystemBase {
   // reverse spins the intake in case of jam
   // return true if cleared
   // return false if jam is still detected
-  public boolean clear() {
-    return false;
+  public void clear() {
+
+    TheRobot.log("Clearing Intake Motor");
+    intakeMotor.set(-captureSpeed);
   }
 
 public boolean isExtended() {

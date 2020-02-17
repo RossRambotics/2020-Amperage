@@ -8,6 +8,7 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.Robot;
 import frc.robot.TheRobot;
 
@@ -17,8 +18,9 @@ public class Shoot extends CommandBase {
   /**
    * Creates a new Shoot.
    */
-  public Shoot() {
+  public Shoot(Subsystem indexer) {
     // Use addRequirements() here to declare subsystem dependencies.
+    this.addRequirements(indexer);
 
 }
 
@@ -29,6 +31,7 @@ public class Shoot extends CommandBase {
     Robot r = TheRobot.getInstance();
     addRequirements(r.m_indexer);
     addRequirements(r.m_shooter);
+    r.m_CMDScheduler.schedule(new IntakeCapture(r.m_intake).withTimeout(5.0));
   }
 
   // Called every time the scheduler runs while the command is scheduled.

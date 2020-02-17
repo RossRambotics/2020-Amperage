@@ -29,13 +29,14 @@ public class CompactIndexer extends CommandBase {
   public void initialize() {
     Robot r = TheRobot.getInstance();
     r.m_indexer.resetEncoders();
+    r.m_CMDScheduler.schedule(new CompactShooter().withTimeout(0.2));
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
     Robot r = TheRobot.getInstance();
-    boolean b = (r.m_indexer.SenseIndex0() || r.m_indexer.SenseIntakePC());
+    boolean b = (r.m_indexer.SenseIndex1() || r.m_indexer.SenseIntakePC0());
 
     if (b) {
       r.m_indexer.compact();
@@ -55,7 +56,7 @@ public class CompactIndexer extends CommandBase {
   @Override
   public boolean isFinished() {
     Robot r = TheRobot.getInstance();
-    boolean b = (r.m_indexer.SenseIndex0() || r.m_indexer.SenseIntakePC());
+    boolean b = (r.m_indexer.SenseIndex1() || r.m_indexer.SenseIntakePC0());
 
     if (b) r.m_indexer.resetEncoders();
 
