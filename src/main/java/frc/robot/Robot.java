@@ -24,6 +24,7 @@ import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.PowerPortTargeter;
 import frc.robot.subsystems.Hood;
+import frc.robot.auto.AutoTarget;
 import frc.robot.commands.*;
 
 
@@ -97,6 +98,14 @@ public class Robot extends TimedRobot {
     SmartDashboard.putData("Commands/Indexer/IndexNewPC!", new IndexNewPowerCell());
     SmartDashboard.putData("Commands/Indexer/CompactIndexer!", new CompactIndexer(m_indexer));
     SmartDashboard.putData("Commands/Indexer/CompactShooter!", new CompactShooter().withTimeout(0.2));
+
+    c = new SequentialCommandGroup(
+      new AutoTarget(m_drive).withTimeout(3.0),
+      new Shoot(m_indexer).withTimeout(5.0)
+    );
+
+    c.setName("Auto Target & Shoot");
+    SmartDashboard.putData("Commands/Auto/Auto Target & Shoot!", c);
     
     c = new ReverseCompactIndexer(m_indexer).withTimeout(0.5);
     c.setName("Reverse Compact");

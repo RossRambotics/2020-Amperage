@@ -8,6 +8,7 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Robot;
 import frc.robot.TheRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
@@ -45,6 +46,7 @@ public class Drive extends SubsystemBase {
   private final static int kDriveStyle_arcade3 = 3;
   private int m_DriveStyle = Drive.kDriveStyle_arcade3;
   private DifferentialDrive m_differentialDrive = new DifferentialDrive(m_leftMotor, m_rightMotor);
+  private double m_dOpenLoopRamp = 0.6;
   
 
 
@@ -55,10 +57,14 @@ public class Drive extends SubsystemBase {
     // setup talon FXs
     m_leftMotor.setNeutralMode(NeutralMode.Brake);
     m_rightMotor.setNeutralMode(NeutralMode.Brake);
-    m_leftMotor.configOpenloopRamp(0.3);
-    m_rightMotor.configOpenloopRamp(0.3);
+    m_leftMotor.configOpenloopRamp(m_dOpenLoopRamp);
+    m_rightMotor.configOpenloopRamp(m_dOpenLoopRamp);
 
     m_driverStick =  new Joystick(0);
+
+    SmartDashboard.putNumber("Drive/Max Power", m_maxPower);
+    SmartDashboard.putNumber("Drive/Power Ramp Time", m_dOpenLoopRamp);
+
 
       SmartDashboard.putNumber("Drive/Drive Style", m_DriveStyle);
       SmartDashboard.putNumber("Targeting/Max Power", m_dTargetMaxPower);
@@ -71,7 +77,7 @@ public class Drive extends SubsystemBase {
   }
 
   private double m_deadzone = 0.05;
-  private double m_maxPower = 1.00;
+  private double m_maxPower = 0.75;
 
   @Override
   public void periodic() {
@@ -84,6 +90,15 @@ public class Drive extends SubsystemBase {
     m_dTargetMinPower = SmartDashboard.getNumber("Targeting/Min Power", 0);
     m_dTargetSpinP = SmartDashboard.getNumber("Targeting/Spin P", 0);
     m_dTargetSpinDeadZone = SmartDashboard.getNumber("Targeting/Spin Dead Zone", 0);
+
+    m_maxPower = SmartDashboard.getNumber("Drive/Max Power", 0);
+    double d = SmartDashboard.getNumber("Drive/Power Ramp Time", 0);
+
+    if (d != m_dOpenLoopRamp) {
+      m_dOpenLoopRamp = d;
+      m_leftMotor.configOpenloopRamp(m_dOpenLoopRamp);
+      m_rightMotor.configOpenloopRamp(m_dOpenLoopRamp);
+    }
 
 
     // drive the robot with the joysticks
@@ -122,6 +137,16 @@ public class Drive extends SubsystemBase {
     }
   }
 
+  public void enableBrakes(boolean enable) {
+    if (enable) {
+      m_leftMotor.setNeutralMode(NeutralMode.Brake);
+      m_rightMotor.setNeutralMode(NeutralMode.Brake);
+    } else {
+      m_leftMotor.setNeutralMode(NeutralMode.Coast);
+      m_rightMotor.setNeutralMode(NeutralMode.Coast);
+    }
+  }
+
   private void TargetDrive(double dvalueLYAxis, double dvalueRYAxis, double dvalueLXAxis, double dvalueRXAxis) {
     double targetAngle = m_lookUpTable.getTargetAngle();
     double dFrame = m_lookUpTable.getFrameCounter();
@@ -130,6 +155,8 @@ public class Drive extends SubsystemBase {
     TheRobot.log("Frame: " +df3.format(dFrame) +
                  " TargetAngle: " + df3.format(targetAngle));
     }
+
+
 
     if (dvalueLYAxis == 0 && dvalueRYAxis == 0) {
       this.TargetDriveSpin(targetAngle, dFrame);
@@ -174,7 +201,8 @@ public class Drive extends SubsystemBase {
 
   }
 
-  private void TargetDriveSpin(double targetAngle, double frame) {
+  private double m_dLastFrame = 0; // keep track of the previous frame processed by vision
+  public void TargetDriveSpin(double targetAngle, double frame) {
     if (Math.abs(targetAngle) <= m_dTargetSpinDeadZone){
       m_differentialDrive.arcadeDrive(0, 0, false);
       m_bTargetingAligned = true;
@@ -182,6 +210,13 @@ public class Drive extends SubsystemBase {
       m_bTargetingAligned = false;
     }
 
+    // if we don't have any new information don't do anything new
+    // so just return
+    if (m_dLastFrame == frame) {
+      return;
+    } else {
+      m_dLastFrame = frame;
+    }
 
     double steer = targetAngle/45.0;
 
@@ -218,6 +253,11 @@ public class Drive extends SubsystemBase {
     }
   }
 
+  public void moveAtVelocity(double LeftVelocity, double RightVelocity)
+  {
+    m_differentialDrive.tankDrive(LeftVelocity, RightVelocity);
+  }
+
 
   public void SetTargeting(boolean b) {
     m_bTargetingAligned = false;
@@ -232,7 +272,15 @@ public class Drive extends SubsystemBase {
     return m_bTargeting;
   }
 
+public double getLeftEncoderPosition()
+{
+  return m_leftMotor.getSelectedSensorPosition();
+}
 
+public double getRightEncoderPosition()
+{
+  return m_rightMotor.getSelectedSensorPosition();
+}
   //check to see if the intake arm is retracted 
   //
   public boolean retract() {
