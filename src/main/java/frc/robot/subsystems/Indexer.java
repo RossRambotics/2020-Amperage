@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 // Rev Spark Max classes
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.ControlType;
+import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANEncoder;
 import com.revrobotics.CANPIDController;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
@@ -51,13 +52,19 @@ public class Indexer extends SubsystemBase {
    * Creates a new Indexer.
    */
   public Indexer() {
-    // TODO fix the CAN id of the motors
+
     m_bottomMotor =  new CANSparkMax(3, MotorType.kBrushless);
     m_topMotor =  new CANSparkMax(4, MotorType.kBrushless);
     m_bottomMotor.restoreFactoryDefaults();
     m_topMotor.restoreFactoryDefaults();
     m_topMotor.setInverted(true);
     m_bottomMotor.setInverted(true);
+
+    // Try to control how far the balls advance inside indexer
+    //m_topMotor.setIdleMode(IdleMode.kBrake);
+    //m_bottomMotor.setIdleMode(IdleMode.kBrake);
+    //m_topMotor.setOpenLoopRampRate(1.0);
+    //m_bottomMotor.setOpenLoopRampRate(1.0);
 
     m_encoderBottom = m_bottomMotor.getEncoder();
     m_encoderBottom.setPosition(0);

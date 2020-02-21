@@ -7,10 +7,13 @@
 
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.TheRobot;
+import frc.robot.commands.Rumble;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -47,6 +50,7 @@ public class Drive extends SubsystemBase {
   private int m_DriveStyle = Drive.kDriveStyle_arcade3;
   private DifferentialDrive m_differentialDrive = new DifferentialDrive(m_leftMotor, m_rightMotor);
   private double m_dOpenLoopRamp = 0.6;
+  private boolean m_bUseJoystick = true;
   
 
 
@@ -102,6 +106,9 @@ public class Drive extends SubsystemBase {
 
 
     // drive the robot with the joysticks
+    if (!m_bUseJoystick) {
+      return;
+    }
 
     //check if it says Left!
     double dvalueLXAxis = m_driverStick.getRawAxis(0);
@@ -156,7 +163,12 @@ public class Drive extends SubsystemBase {
                  " TargetAngle: " + df3.format(targetAngle));
     }
 
-
+    // If the target isn't found let the driver know
+    if (!m_lookUpTable.isTargetFound()) {
+      Robot r = TheRobot.getInstance();
+      CommandBase c = new Rumble(r.getDriverStick(), RumbleType.kLeftRumble);
+      r.m_CMDScheduler.schedule(c.withTimeout(1.0));
+    }
 
     if (dvalueLYAxis == 0 && dvalueRYAxis == 0) {
       this.TargetDriveSpin(targetAngle, dFrame);
@@ -237,6 +249,8 @@ public class Drive extends SubsystemBase {
   // sets the drive power for the left & right motors
   // corrects for the orientation of the mount
   private void JustDrive(double dvalueLYAxis, double dvalueRYAxis, double dvalueLXAxis, double dvalueRXAxis) {
+    //TheRobot.log("JustDrive Velocities" + TheRobot.toString(dvalueLYAxis) + ", " + TheRobot.toString(dvalueRYAxis));
+
     switch (m_DriveStyle) {
       case Drive.kDriveStyle_tank:
         m_differentialDrive.tankDrive(dvalueLYAxis, dvalueRYAxis);
@@ -255,7 +269,11 @@ public class Drive extends SubsystemBase {
 
   public void moveAtVelocity(double LeftVelocity, double RightVelocity)
   {
-    m_differentialDrive.tankDrive(LeftVelocity, RightVelocity);
+    //TheRobot.log("Auto Velocities" + TheRobot.toString(LeftVelocity));
+    m_leftMotor.set(LeftVelocity);
+    m_rightMotor.set(LeftVelocity); 
+    //m_differentialDrive.tankDrive(LeftVelocity, RightVelocity);
+    //JustDrive(LeftVelocity, 0, 0, 0);
   }
 
 
@@ -286,4 +304,14 @@ public double getRightEncoderPosition()
   public boolean retract() {
     return false;
   }
+
+  public void SetUseJoystick(boolean b) {
+    m_bUseJoystick = b;
+  }
+/*
+  public void resetEncoders() {
+    m_.setPosition(0);
+    m_encoderBottom.setPosition(0);
+  }
+  */
 }

@@ -22,9 +22,11 @@ import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.Indexer;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
+import frc.robot.subsystems.Stick;
 import frc.robot.subsystems.PowerPortTargeter;
 import frc.robot.subsystems.Hood;
 import frc.robot.auto.AutoTarget;
+import frc.robot.auto.DriveStriaghtWEncoders;
 import frc.robot.commands.*;
 
 
@@ -55,6 +57,7 @@ public class Robot extends TimedRobot {
   private static final String UNKNOWN = "Unknown";
 
   private final Timer m_timer = new Timer();
+  private Stick m_DriverStick = null;
  
 
   public Robot() {
@@ -83,6 +86,7 @@ public class Robot extends TimedRobot {
 
     // Setup the singleton for easy access to the robot and subsystems
     m_robotContainer = new RobotContainer();
+    m_DriverStick = new Stick(m_robotContainer.getDriverStick());
 
     // Get the scheduler
     m_CMDScheduler = CommandScheduler.getInstance();
@@ -122,7 +126,10 @@ public class Robot extends TimedRobot {
       c.setName("Smash & Compact");
       SmartDashboard.putData("Commands/Indexer/Smash & Compact!", c); 
 
-    
+    // 1 meter, 0.2 power
+    c = new DriveStriaghtWEncoders(m_drive, 1, .2).withTimeout(2);
+    c.setName("TestDriveStraight");
+    SmartDashboard.putData("Commands/Drive/TestDriveStraight", c);
   }
 
   /**
@@ -132,7 +139,7 @@ public class Robot extends TimedRobot {
   public void autonomousInit() {
     m_timer.reset();
     m_timer.start();
-
+    
 
   }
 
@@ -260,6 +267,10 @@ public class Robot extends TimedRobot {
   public void testInit() {
     // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();
+  }
+
+  public Stick getDriverStick() {
+    return m_DriverStick;
   }
 
 }

@@ -10,9 +10,14 @@ import frc.robot.*;
  */
 
 public class DriveStriaghtWEncoders extends CommandBase {
-    private double m_clickPerMeter = 3625;
+                                                /* 21000 = 1 wheel rotation
+                                                 * wheel is 4 in diameter
+                                                 * 39.37 in per meter
+                                                 */
+    private double m_clickPerMeter = 21000.0 * 4.0 * 3.1415; 
     private double m_chokeClicks = 4000; // when to begin to halt the robot
     private double m_correctionCoefficent = .02;
+    private double m_exponentialReduction = 1.2;
 
     private double m_targetDistance = 0; // the target distance to be driven in meters
     private double m_targetClicks = 0; // the target distance in clicks
@@ -28,6 +33,9 @@ public class DriveStriaghtWEncoders extends CommandBase {
     
     /**
      * Creates a DriveStraightWEncoder Commands
+     * drive -> drive subsystem
+     * distance -> distance to travel in meters
+     * velocity -> the max velocity to travel at
      */
     public DriveStriaghtWEncoders(Drive drive, double distance, double velocity) {
       // Use addRequirements() here to declare subsystem dependencies.
@@ -43,6 +51,7 @@ public class DriveStriaghtWEncoders extends CommandBase {
     // Called when the command is initially scheduled.
     @Override
     public void initialize() {
+      m_drive.SetUseJoystick(false);
       m_drive.enableBrakes(false);
 
       m_intialLeftEncoderPosition = m_drive.getLeftEncoderPosition();
@@ -65,7 +74,7 @@ public class DriveStriaghtWEncoders extends CommandBase {
         //right = [1]
         
         m_drive.moveAtVelocity(velocities[0], velocities[1]);
-  
+        
       return;
     }
 
@@ -73,6 +82,7 @@ public class DriveStriaghtWEncoders extends CommandBase {
     @Override
     public void end(boolean interrupted) {
       m_drive.enableBrakes(true);
+      m_drive.SetUseJoystick(true);
     }
   
     // Returns true when the command should end.
@@ -88,7 +98,7 @@ public class DriveStriaghtWEncoders extends CommandBase {
         double distanceRemaining = absoluteClicksRemaining(); 
         if(distanceRemaining < m_chokeClicks)
         {
-            velocityTarget = velocityTarget * Math.pow((distanceRemaining / m_chokeClicks), 3/2); // slows the bot as it approachs the target
+            velocityTarget = velocityTarget * Math.pow((distanceRemaining / m_chokeClicks), m_exponentialReduction); // slows the bot as it approachs the target
         }
 
         return velocityTarget;
@@ -144,8 +154,10 @@ public class DriveStriaghtWEncoders extends CommandBase {
 
     private double clicksRemainging() // returns the remaining clicks the robot has to travel
     {
-        double leftRemaining = m_drive.getLeftEncoderPosition() - m_intialLeftEncoderPosition;
-        double rightRemaining = m_drive.getRightEncoderPosition() - m_intialRightEncoderPosition;
+        double leftRemaining = m_targetClicks - (m_drive.getLeftEncoderPosition() - m_intialLeftEncoderPosition);
+        double rightRemaining = m_targetClicks - (m_drive.getRightEncoderPosition() - m_intialRightEncoderPosition);
+
+        System.out.println((leftRemaining + rightRemaining) / 2);
 
         return (leftRemaining + rightRemaining) / 2;
     }

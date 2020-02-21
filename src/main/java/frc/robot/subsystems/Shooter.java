@@ -197,7 +197,7 @@ public class Shooter extends SubsystemBase {
   public boolean ready(ShooterValueSet m_Values) {
     // set the target RPM
     m_RPM_target = m_Values.shooterRPM;
-    //m_RPM_target = m_dTuningRPM;
+    if (m_bTuning) m_RPM_target = m_dTuningRPM;
 
     // set the PID Controller to hit the RPM
     m_pidController.setReference(m_RPM_target, ControlType.kVelocity);

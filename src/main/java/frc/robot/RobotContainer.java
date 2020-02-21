@@ -25,7 +25,7 @@ public class RobotContainer {
   //private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
 
   private final Command m_autoCommand = null;
-  private Joystick m_Joystick1 = new Joystick(0);
+  private Joystick m_DriverStick = new Joystick(0);
 
 
   /**
@@ -47,35 +47,35 @@ public class RobotContainer {
     Robot r = TheRobot.getInstance();
 
     // setup the shooter using the right trigger
-    JoystickButton rightTrigger = new JoystickAnalogButton(m_Joystick1, 3); // the trigger associated with shooting
+    JoystickButton rightTrigger = new JoystickAnalogButton(m_DriverStick, 3); // the trigger associated with shooting
     rightTrigger.whenHeld(new frc.robot.commands.Shoot(r.m_indexer).withTimeout(10.0));
 
     // a button - capture
-    JoystickButton aButton = new JoystickButton(m_Joystick1, 1); // the button associated while caputuring balls
+    JoystickButton aButton = new JoystickButton(m_DriverStick, 1); // the button associated while caputuring balls
     aButton.toggleWhenPressed(new frc.robot.commands.IntakeCapture(r.m_intake), true);
 
     // b  button - capture
-    JoystickButton bButton = new JoystickButton(m_Joystick1, 2); // the button associated while cleraing the balls out of the intake
+    JoystickButton bButton = new JoystickButton(m_DriverStick, 2); // the button associated while cleraing the balls out of the intake
     bButton.whenHeld(new frc.robot.commands.ClearIntake(r.m_intake), true);
 
     // x button - capture
-    JoystickButton xButton = new JoystickButton(m_Joystick1, 3); // the button associated while caputuring balls
+    JoystickButton xButton = new JoystickButton(m_DriverStick, 3); // the button associated while caputuring balls
     xButton.toggleWhenPressed(new frc.robot.commands.ExtendIntake(r.m_indexer), true);
 
     // left trigger - activate targeting
-    JoystickButton leftTrigger = new JoystickAnalogButton(m_Joystick1, 2); // the trigger associated with targeting
+    JoystickButton leftTrigger = new JoystickAnalogButton(m_DriverStick, 2); // the trigger associated with targeting
     leftTrigger.whenHeld(new frc.robot.commands.Target());
 
     // start button - activate top indexer
-    JoystickButton startButton = new JoystickButton(m_Joystick1, 8); // the button runs the indexer
+    JoystickButton startButton = new JoystickButton(m_DriverStick, 8); // the button runs the indexer
     startButton.whileHeld(new frc.robot.commands.RunIndexer(r.m_indexer));
 
     // back button - clear indexer
-    JoystickButton backButton = new JoystickButton(m_Joystick1, 7); // the buttom runs the indexer
+    JoystickButton backButton = new JoystickButton(m_DriverStick, 7); // the buttom runs the indexer
     backButton.whileHeld(new frc.robot.commands.ClearIndexer(r.m_indexer));
 
     // right shoulder button - clear shooter
-    JoystickButton rightShoulderButton = new JoystickButton(m_Joystick1, 6);
+    JoystickButton rightShoulderButton = new JoystickButton(m_DriverStick, 6);
     rightShoulderButton.whileHeld(new frc.robot.commands.CompactShooter());
 
     /*
@@ -103,5 +103,9 @@ public class RobotContainer {
   public Command getAutonomousCommand() {
     // An ExampleCommand will run in autonomous
     return m_autoCommand;
+  }
+
+  public Joystick getDriverStick() {
+    return m_DriverStick;
   }
 }
