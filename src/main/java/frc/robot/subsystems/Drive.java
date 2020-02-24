@@ -32,13 +32,12 @@ public class Drive extends SubsystemBase {
   private final WPI_TalonFX m_leftMotor = new WPI_TalonFX(21);
   private final WPI_TalonFX m_rightMotor = new WPI_TalonFX(22);
 
-
-
-  private boolean m_bTargeting = false;
-  private boolean m_bTargetingAligned = false;
+  private boolean m_bPowerPortTargeting = false;
+  private boolean m_bPowerCellTargeting = false;
+  private boolean m_bPowerPortTargetingAligned = false;
   private double m_dTargetMaxPower = 0.4;
   private double m_dTargetMinPower = 0.1;
-  private double m_dTargetSpinP = 0.6;
+  private double m_dTargetSpinP = 0.4;
   private double m_dTargetSpinDeadZone = 1.0;
 
   private ShooterLookUp m_lookUpTable = null; // look up table for shooter values
@@ -64,7 +63,8 @@ public class Drive extends SubsystemBase {
     m_leftMotor.configOpenloopRamp(m_dOpenLoopRamp);
     m_rightMotor.configOpenloopRamp(m_dOpenLoopRamp);
 
-    m_driverStick =  new Joystick(0);
+    m_driverStick =  new Joystick(0); // drivers joystick
+
 
     SmartDashboard.putNumber("Drive/Max Power", m_maxPower);
     SmartDashboard.putNumber("Drive/Power Ramp Time", m_dOpenLoopRamp);
@@ -105,6 +105,8 @@ public class Drive extends SubsystemBase {
     }
 
 
+   
+
     // drive the robot with the joysticks
     if (!m_bUseJoystick) {
       return;
@@ -137,11 +139,24 @@ public class Drive extends SubsystemBase {
     }
 
     // drive the robot in manual mode
-    if (!m_bTargeting) {
+    if (!(m_bPowerPortTargeting || m_bPowerCellTargeting)) {
       this.JustDrive(dvalueLYAxis, dvalueRYAxis, dvalueLXAxis, dvalueRXAxis);
-    } else {
-      this.TargetDrive(dvalueLYAxis, dvalueRYAxis, dvalueLXAxis, dvalueRXAxis);
+
+      // If the indexer is full
+      Robot r = TheRobot.getInstance();
+      if (r.m_indexer.isFull()) {
+        r.m_LEDs.setColor(frc.robot.commands.ledColor.kIndexerFull);
+      } else {
+        r.m_LEDs.setColor(frc.robot.commands.ledColor.kNormal);
+      }
+      
+    } else if(m_bPowerPortTargeting) {
+      this.PowerPortTargetDrive(dvalueLYAxis, dvalueRYAxis, dvalueLXAxis, dvalueRXAxis);
+    }else{
+      this.PowerCellTargetDrive(dvalueLYAxis, dvalueRYAxis, dvalueLXAxis, dvalueRXAxis);
     }
+
+
   }
 
   public void enableBrakes(boolean enable) {
@@ -154,7 +169,7 @@ public class Drive extends SubsystemBase {
     }
   }
 
-  private void TargetDrive(double dvalueLYAxis, double dvalueRYAxis, double dvalueLXAxis, double dvalueRXAxis) {
+  private void PowerPortTargetDrive(double dvalueLYAxis, double dvalueRYAxis, double dvalueLXAxis, double dvalueRXAxis) {
     double targetAngle = m_lookUpTable.getTargetAngle();
     double dFrame = m_lookUpTable.getFrameCounter();
 
@@ -164,10 +179,13 @@ public class Drive extends SubsystemBase {
     }
 
     // If the target isn't found let the driver know
+    Robot r = TheRobot.getInstance();
     if (!m_lookUpTable.isTargetFound()) {
-      Robot r = TheRobot.getInstance();
       CommandBase c = new Rumble(r.getDriverStick(), RumbleType.kLeftRumble);
       r.m_CMDScheduler.schedule(c.withTimeout(1.0));
+      r.m_LEDs.setColor(frc.robot.commands.ledColor.kTargetNotFound);
+    } else {
+      r.m_LEDs.setColor(frc.robot.commands.ledColor.kTargetFound);
     }
 
     if (dvalueLYAxis == 0 && dvalueRYAxis == 0) {
@@ -199,27 +217,69 @@ public class Drive extends SubsystemBase {
         m_differentialDrive.arcadeDrive(dvalueLYAxis, steer);
         break;
     }
+  }
 
-    if (targetAngle > 0) {
-      // turn right
-      //this.JustDrive(dvalueLYAxis,0);
-    } else if (targetAngle < 0) {
-      // turn left
-      //this.JustDrive(0, dvalueRYAxis);
-    } else {
-      // stop turning
-      //this.JustDrive(0, 0);
+  private void PowerCellTargetDrive(double dvalueLYAxis, double dvalueRYAxis, double dvalueLXAxis, double dvalueRXAxis) {
+    Robot r = TheRobot.getInstance();
+    double targetAngle = r.m_PCTargeter.getPowerCellAngle();
+    double dFrame = r.m_PCTargeter.getPowerCellAngle();
+
+    if (true) {
+    TheRobot.log("Frame: " +df3.format(dFrame) +
+                 " TargetAngle: " + df3.format(targetAngle));
     }
 
+    // If the target isn't found let the driver know
+    if (!r.m_PCTargeter.isPowerCellFound()) {
+      r.m_LEDs.setColor(frc.robot.commands.ledColor.kTargetNotFound);
+    } else {
+      r.m_LEDs.setColor(frc.robot.commands.ledColor.kTargetFound);
+    }
+
+    if (dvalueLYAxis == 0 && dvalueRYAxis == 0) {
+      this.TargetDriveSpin(targetAngle, dFrame);
+      return;
+    }
+
+    // target while driving
+    double steer = 0;
+    switch (m_DriveStyle) {
+      case Drive.kDriveStyle_tank: {
+        // Turn right?
+        if (targetAngle > 0) dvalueRYAxis = 0;
+
+        // Turn left?
+        if (targetAngle < 0) dvalueLYAxis = 0;
+
+        m_differentialDrive.tankDrive(dvalueLYAxis, dvalueRYAxis);
+      } break;
+      case Drive.kDriveStyle_arcade2:
+        dvalueLYAxis = dvalueRYAxis;
+        
+      case Drive.kDriveStyle_arcade1:
+      case Drive.kDriveStyle_arcade3:
+        // scaling steer to -1 to 1 over 45 degrees
+        steer = targetAngle/45.0;
+        if (steer > 1.0) steer = 1.0;
+        if (steer < -1.0) steer = -1.0;
+        m_differentialDrive.arcadeDrive(dvalueLYAxis, steer);
+        break;
+    }
   }
 
   private double m_dLastFrame = 0; // keep track of the previous frame processed by vision
   public void TargetDriveSpin(double targetAngle, double frame) {
+    double steer = targetAngle/45.0;
+    Robot r = TheRobot.getInstance();
+
     if (Math.abs(targetAngle) <= m_dTargetSpinDeadZone){
       m_differentialDrive.arcadeDrive(0, 0, false);
-      m_bTargetingAligned = true;
+      steer = 0;
+      m_bPowerPortTargetingAligned = true;
+      r.m_LEDs.setColor(frc.robot.commands.ledColor.kOnTarget);
     } else {
-      m_bTargetingAligned = false;
+      m_bPowerPortTargetingAligned = false;
+      r.m_LEDs.setColor(frc.robot.commands.ledColor.kTargetFound);
     }
 
     // if we don't have any new information don't do anything new
@@ -230,7 +290,7 @@ public class Drive extends SubsystemBase {
       m_dLastFrame = frame;
     }
 
-    double steer = targetAngle/45.0;
+    
 
     if (steer > m_dTargetMaxPower) steer = m_dTargetMaxPower;
     if (steer < -m_dTargetMaxPower) steer = -m_dTargetMaxPower;
@@ -277,17 +337,22 @@ public class Drive extends SubsystemBase {
   }
 
 
-  public void SetTargeting(boolean b) {
-    m_bTargetingAligned = false;
-    m_bTargeting = b;
+  public void SetPowerPortTargeting(boolean b) {
+    m_bPowerPortTargetingAligned = false;
+    m_bPowerPortTargeting = b;
+  }
+
+  public void SetPowerCellTargeting(boolean b) {
+    m_bPowerCellTargeting = false;
+    m_bPowerCellTargeting = b;
   }
 
   public boolean GetTargetingAligned() {
-    return m_bTargetingAligned;
+    return m_bPowerPortTargetingAligned;
   }
   
   public boolean GetTargeting() {
-    return m_bTargeting;
+    return (m_bPowerPortTargeting || m_bPowerCellTargeting);
   }
 
 public double getLeftEncoderPosition()

@@ -23,7 +23,8 @@ public class Target extends CommandBase {
   @Override
   public void initialize() {
     Robot r = TheRobot.getInstance();
-    r.m_drive.SetTargeting(true);
+    r.m_shooter.setLEDRing(true);
+    r.m_drive.SetPowerPortTargeting(true);
     TheRobot.log("Starting Targeting.");
   }
 
@@ -36,7 +37,8 @@ public class Target extends CommandBase {
   @Override
   public void end(boolean interrupted) {
     Robot r = TheRobot.getInstance();
-    r.m_drive.SetTargeting(false);
+    r.m_drive.SetPowerPortTargeting(false);
+    r.m_shooter.setLEDRing(false);
     TheRobot.log("Ending Targeting.");
   }
 

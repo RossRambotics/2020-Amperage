@@ -2,33 +2,37 @@ package frc.robot.commands;
 
 import frc.robot.Robot;
 import frc.robot.TheRobot;
-
+import frc.robot.eRobotSide;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
 public class ReleaseClimbWinch extends CommandBase {
 
     private boolean m_finished = false;
+    private eRobotSide m_winch;
 
-    public ReleaseClimbWinch() { // when instance of command is created
-
+    public ReleaseClimbWinch(eRobotSide w) { // when instance of command is created
+        Robot r = TheRobot.getInstance(); 
+        this.addRequirements(r.m_climber);
+        
+        m_winch = w;
     }
 
     @Override
     public void initialize() { // frist time the command was scheduled
         TheRobot.log("Climb Winch Retract Initializing...");
+        Robot r = TheRobot.getInstance(); // calls the rectract function on the climber
+        r.m_climber.releaseWinch(m_winch);
     }
 
     @Override
     public void execute() { // when command is running called repeatedly -- stop by changing m_finished
-        Robot r = TheRobot.getInstance(); // calls the rectract function on the climber
-        r.m_climber.releaseWinch();
     }
 
     @Override
     public void end(boolean interrupted)
     {
         Robot r = TheRobot.getInstance();
-        r.m_climber.stopReleaseWinch();
+        r.m_climber.stopWinch(m_winch);
     }
 
     @Override

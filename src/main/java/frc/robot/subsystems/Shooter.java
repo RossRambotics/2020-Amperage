@@ -7,6 +7,7 @@
 
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj.DigitalOutput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -27,6 +28,8 @@ public class Shooter extends SubsystemBase {
   private CANSparkMax m_motor2 = null;
   private CANEncoder m_encoder1 = null;
   private CANPIDController m_pidController = null;
+  private DigitalOutput m_LEDrelay = new DigitalOutput(0); // LED ring used for targeting in DIO port 0
+
 
   private ShooterLookUp m_lookUpTable = null; // look up table for shooter values
 
@@ -35,10 +38,13 @@ public class Shooter extends SubsystemBase {
   private double m_RPM_target_range = 100;
 
   private double m_pid_kP, m_pid_kI, m_pid_kD, m_pid_kIz, m_pid_kFF;
-  private double m_dpid_kI_Modified;
+  private double m_dpid_kI_Modified = .00001;
   private double m_pid_kMaxOutput, m_pid_kMinOutput, m_pid_maxRPM;
   private boolean m_bTuning = false;
   private double m_dTuningRPM = 4000;
+
+  private boolean m_bReadyToShoot = false;  // is the shooter ready? 
+                                            // Here to prevent multiple  back ups
   
 
   /**
@@ -194,7 +200,7 @@ public class Shooter extends SubsystemBase {
   // returns true if the shooter is up-to-speed for the target distance
   // if distance is zero takes shooter to default speed
   // returns false if the shooter is not at target speed
-  public boolean ready(ShooterValueSet m_Values) {
+  public boolean ready(ShooterValueSet m_Values) {    
     // set the target RPM
     m_RPM_target = m_Values.shooterRPM;
     if (m_bTuning) m_RPM_target = m_dTuningRPM;
@@ -220,4 +226,17 @@ public class Shooter extends SubsystemBase {
     
     return false;
   }
+
+  public void setReadyToShoot(boolean b) {
+    m_bReadyToShoot = b;
+  }
+
+public boolean getReadyToShoot() {
+	return m_bReadyToShoot;
+}
+
+public void setLEDRing(Boolean Powered){ // sets the state of the led ring
+  m_LEDrelay.set(Powered);
+}
+
 }

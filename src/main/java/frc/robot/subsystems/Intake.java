@@ -15,6 +15,7 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.ControlType;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
+import edu.wpi.first.wpilibj.DigitalOutput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -25,6 +26,7 @@ public class Intake extends SubsystemBase {
   private CANSparkMax intakeMotor = null;
   private CANEncoder intakeEncoder = null;
   private CANPIDController intakePIDController = null;
+  private DigitalOutput m_LEDrelay = new DigitalOutput(1); // LED ring used for targeting in DIO port 1
 
   private Double pid_kP;
   private Double pid_kI;
@@ -161,6 +163,10 @@ public class Intake extends SubsystemBase {
 public boolean isExtended() {
   
 	return m_bExtended;
+}
+
+public void setLEDRing(Boolean Powered){ // sets the state of the led ring
+  m_LEDrelay.set(Powered);
 }
 
 }

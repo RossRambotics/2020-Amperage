@@ -8,39 +8,49 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj.Spark;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.commands.ledColor;
 
 public class ledController extends SubsystemBase {
+  private double m_Color = 0.0;
+  private Spark m_ledController = new Spark(0);
+
   /**
    * Creates a new ledController.
    */
 
-  private Spark m_ledController = new Spark(1);
+
 
 
   public ledController() {
-
+    SmartDashboard.putNumber("LEDController/color", m_Color);
   
   }
 
   @Override
   public void periodic() {
-    
+    m_Color = SmartDashboard.getNumber("LEDController/color", m_Color);
+    m_ledController.set(m_Color);
   }
 
-  public void setColor(ledColor color) {
 
+  public void setColor(ledColor color) {
     switch(color) {
       case kIndexerFull:
-        m_ledController.set(0.97);
+        m_Color = 0.97;
         break;
-
       case kTargetFound:
-        m_ledController.set(0.79);
+        m_Color = 0.69;
         break;
+      case kTargetNotFound:
+        m_Color = 0.65;
+      case kOnTarget:
+        m_Color = 0.77;
+      case kNormal:
+      default:
+        m_Color = 0.91;
     }
-
   }
 
 }

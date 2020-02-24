@@ -164,7 +164,6 @@ public class Hood extends SubsystemBase {
  
 
     // get distance to target
-    double d = r.m_powerPowerTargeter.getDistance();
     ShooterValueSet m_values = m_lookUpTable.getCurrentValues(true);
 
     // tell shooter to come up to target speed based on distance

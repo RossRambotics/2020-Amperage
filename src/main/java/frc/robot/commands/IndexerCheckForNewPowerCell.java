@@ -68,7 +68,7 @@ public class IndexerCheckForNewPowerCell extends CommandBase {
         new ReverseCompactIndexer(r.m_indexer).withTimeout(0.5)
         //new WaitCommand(0.25)
         );
-      
+      c.setName("Seq in CheckForNewPowerCell");
       r.m_CMDScheduler.schedule(c);
     }
   }

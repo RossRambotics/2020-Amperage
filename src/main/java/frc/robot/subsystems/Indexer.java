@@ -7,6 +7,7 @@
 
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -38,6 +39,7 @@ public class Indexer extends SubsystemBase {
   private CANPIDController m_pidControllerTop = null;
   private double m_pid_kP = 0.2;
   private double m_pid_kI = 0.001;
+  private boolean m_bReadyToShoot = false;
 
   // setup ultra sonic sensor
   public AnalogInput m_Sensor_PC_Intake0 = new AnalogInput(0); // intake has presented powercell to indexer
@@ -61,8 +63,8 @@ public class Indexer extends SubsystemBase {
     m_bottomMotor.setInverted(true);
 
     // Try to control how far the balls advance inside indexer
-    //m_topMotor.setIdleMode(IdleMode.kBrake);
-    //m_bottomMotor.setIdleMode(IdleMode.kBrake);
+    m_topMotor.setIdleMode(IdleMode.kBrake);
+    m_bottomMotor.setIdleMode(IdleMode.kBrake);
     //m_topMotor.setOpenLoopRampRate(1.0);
     //m_bottomMotor.setOpenLoopRampRate(1.0);
 
@@ -91,9 +93,12 @@ public class Indexer extends SubsystemBase {
     SmartDashboard.putNumber("Indexer/Compact Encoder Bottom", m_encoderBottom.getPosition());
     SmartDashboard.putNumber("Indexer/Compact Kp", m_pid_kP);
 
-    this.setDefaultCommand(new SequentialCommandGroup(
-      new WaitCommand(0.25), new IndexerCheckForNewPowerCell(this)
-    ));
+    CommandBase c = new SequentialCommandGroup(
+      new WaitCommand(0.25), 
+      new IndexerCheckForNewPowerCell(this)
+      );
+    c.setName("Indexer Def Cmd");
+    this.setDefaultCommand(c);
 
   }
 

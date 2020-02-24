@@ -31,7 +31,7 @@ public class Shoot extends CommandBase {
     Robot r = TheRobot.getInstance();
     addRequirements(r.m_indexer);
     addRequirements(r.m_shooter);
-    r.m_CMDScheduler.schedule(new IntakeCapture(r.m_intake).withTimeout(5.0));
+    //r.m_CMDScheduler.schedule(new IntakeCapture(r.m_intake).withTimeout(5.0));
   }
 
   // Called every time the scheduler runs while the command is scheduled.

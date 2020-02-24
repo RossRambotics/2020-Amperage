@@ -11,8 +11,12 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.Command;
-
+import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.helper.JoystickAnalogButton;
+import frc.robot.commands.*;
+
+import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 
 /**
  * This class is where the bulk of the robot should be declared.  Since Command-based is a
@@ -26,6 +30,7 @@ public class RobotContainer {
 
   private final Command m_autoCommand = null;
   private Joystick m_DriverStick = new Joystick(0);
+  private Joystick m_OperatorStick = new Joystick(1); // operators joystick
 
 
   /**
@@ -45,10 +50,17 @@ public class RobotContainer {
    */
   private void configureButtonBindings() {
     Robot r = TheRobot.getInstance();
+    CommandBase c;
 
     // setup the shooter using the right trigger
     JoystickButton rightTrigger = new JoystickAnalogButton(m_DriverStick, 3); // the trigger associated with shooting
-    rightTrigger.whenHeld(new frc.robot.commands.Shoot(r.m_indexer).withTimeout(10.0));
+    c = new SequentialCommandGroup(
+        new ClearIndexer(r.m_indexer).withTimeout(0.05),
+        new ReadyShooter(r.m_indexer).withTimeout(0.2),
+        new frc.robot.commands.Shoot(r.m_indexer).withTimeout(5.0));
+    //c = new frc.robot.commands.Shoot(r.m_indexer).withTimeout(10.0);
+
+    rightTrigger.whenHeld(c);
 
     // a button - capture
     JoystickButton aButton = new JoystickButton(m_DriverStick, 1); // the button associated while caputuring balls
@@ -76,22 +88,47 @@ public class RobotContainer {
 
     // right shoulder button - clear shooter
     JoystickButton rightShoulderButton = new JoystickButton(m_DriverStick, 6);
-    rightShoulderButton.whileHeld(new frc.robot.commands.CompactShooter());
+    //rightShoulderButton.whileHeld(new frc.robot.commands.CompactShooter());
+    c = new SequentialCommandGroup(
+        new ClearIndexer(r.m_indexer).withTimeout(0.05),
+        new ReadyShooter(r.m_indexer).withTimeout(0.1)
+    );
+    rightShoulderButton.whenPressed(c);
 
-    /*
-    JoystickButton leftShoulder = new JoystickButton(m_Joystick1, 5); // runs the lift down
-    leftShoulder.whenPressed(new frc.robot.commands.RetractClimbLift());
+    // configure operator buttons
+    // Winch up / Retract right side
+    JoystickButton operatorRightTrigger = new JoystickAnalogButton(m_OperatorStick, 3);
+    operatorRightTrigger.whileHeld(new frc.robot.commands.RetractClimbWinch(eRobotSide.RIGHT));
 
-    JoystickButton rightShoulder = new JoystickButton(m_Joystick1, 6); // runs the lift up
-    rightShoulder.whenPressed(new frc.robot.commands.ExtendClimbLift());
-
-    JoystickButton backButton = new JoystickButton(m_Joystick1, 7); // releases the winch down
-    backButton.whileHeld(new frc.robot.commands.ReleaseClimbWinch());
+    // Winch down / Release right side
+    JoystickButton operatorRightShoulder = new JoystickButton(m_OperatorStick, 6);;
+    operatorRightShoulder.whileHeld(new frc.robot.commands.RetractClimbWinch(eRobotSide.RIGHT));    
     
-    JoystickButton startButton = new JoystickButton(m_Joystick1, 8); // releases the winch down
-    startButton.whileHeld(new frc.robot.commands.RetractClimbWinch());
-    */
+    // Winch up / Retract left side
+    JoystickButton operatorLeftTrigger = new JoystickAnalogButton(m_OperatorStick, 2);
+    operatorLeftTrigger.whileHeld(new frc.robot.commands.ReleaseClimbWinch(eRobotSide.LEFT));
 
+    // Winch down / Release left side
+    JoystickButton operatorLeftShoulder = new JoystickButton(m_OperatorStick, 5);;
+    operatorLeftShoulder.whileHeld(new frc.robot.commands.ReleaseClimbWinch(eRobotSide.RIGHT));
+    
+    // Lift section
+    // Lift up / Retract right side
+   /* JoystickButton operatorRightUp = new JoystickAnalogButton(m_OperatorStick, 0, 0.5);
+    operatorRightUp.whileHeld(new frc.robot.commands.RetractClimbWinch(eRobotSide.RIGHT));
+
+    // Winch down / Release right side
+    JoystickButton operatorRightDown = new JoystickAnalogButton(m_OperatorStick, 0, -0.5);;
+    operatorRightDown.whileHeld(new frc.robot.commands.RetractClimbWinch(eRobotSide.RIGHT));    
+    
+    // Winch up / Retract left side
+    JoystickButton operatorLeftUp = new JoystickAnalogButton(m_OperatorStick, 4, 0.5);
+    operatorLeftUp.whileHeld(new frc.robot.commands.ReleaseClimbWinch(eRobotSide.LEFT));
+
+    // Winch down / Release left side
+    JoystickButton operatorLeftDown = new JoystickAnalogButton(m_OperatorStick, 4, -0.5);;
+    operatorLeftDown.whileHeld(new frc.robot.commands.ReleaseClimbWinch(eRobotSide.RIGHT));
+    */
   }
 
 

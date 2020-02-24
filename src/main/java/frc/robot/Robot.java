@@ -9,10 +9,12 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 // add subsystems
@@ -21,9 +23,10 @@ import frc.robot.subsystems.ControlPanel;
 import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.Indexer;
 import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.PowerCellTargeter;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Stick;
-import frc.robot.subsystems.PowerPortTargeter;
+import frc.robot.subsystems.ledController;
 import frc.robot.subsystems.Hood;
 import frc.robot.auto.AutoTarget;
 import frc.robot.auto.DriveStriaghtWEncoders;
@@ -50,8 +53,9 @@ public class Robot extends TimedRobot {
   public Indexer m_indexer = null;
   public Intake m_intake = null;
   public Shooter m_shooter = null;
-  public PowerPortTargeter m_powerPowerTargeter = null;
   public Hood m_hood = null;
+  public ledController m_LEDs = null;
+  public PowerCellTargeter m_PCTargeter = null;
   public CommandScheduler m_CMDScheduler = null;
 
   private static final String UNKNOWN = "Unknown";
@@ -73,15 +77,15 @@ public class Robot extends TimedRobot {
   {
     TheRobot.log("robotInit.");
 
-    m_climber = null;//new Climber();
+    m_climber = new Climber();
     m_controlPanel = new ControlPanel(); 
     m_drive = new Drive();
     m_intake = new Intake();
     m_indexer = new Indexer();
     m_shooter = new Shooter();
-    m_powerPowerTargeter = new PowerPortTargeter();
     m_hood = new Hood();
-  
+    m_PCTargeter = new PowerCellTargeter();
+    m_LEDs = new ledController();
 
 
     // Setup the singleton for easy access to the robot and subsystems
@@ -114,7 +118,18 @@ public class Robot extends TimedRobot {
     c = new ReverseCompactIndexer(m_indexer).withTimeout(0.5);
     c.setName("Reverse Compact");
     SmartDashboard.putData("Commands/Indexer/RevCompactIndexer!", c);
-    
+
+    c = new Rumble(m_DriverStick, RumbleType.kLeftRumble).withTimeout(1.0);
+    c.setName("Rumble");
+    SmartDashboard.putData("Commands/Rumble !", c);
+
+    c = new ParallelRaceGroup(
+      new ClearIndexer(m_indexer).withTimeout(0.1),
+      new CompactShooter().withTimeout(0.1)
+    );
+    c.setName("Prepare to Shoot!");
+    SmartDashboard.putData("Commands/Shooter/Prepare!", c); 
+
     c = new SequentialCommandGroup(
       new RetractIntake(), 
       new WaitCommand(0.25), 
