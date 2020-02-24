@@ -8,18 +8,15 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.Robot;
 import frc.robot.TheRobot;
+import frc.robot.subsystems.Indexer;
 
-// moves the power cells in the indexer past the 1st sensor
-// allowing room for next power cell to be inserted
-public class CompactIndexer extends CommandBase {
-
+public class ReadyShooter extends CommandBase {
   /**
-   * Creates a new CompactIndexer.
+   * Creates a new ReadyShooter.
    */
-  public CompactIndexer(Subsystem indexer) {
+  public ReadyShooter(Indexer indexer) {
     // Use addRequirements() here to declare subsystem dependencies.
     this.addRequirements(indexer);
   }
@@ -28,41 +25,29 @@ public class CompactIndexer extends CommandBase {
   @Override
   public void initialize() {
     Robot r = TheRobot.getInstance();
-    r.m_indexer.resetEncoders();
-    if (r.m_indexer.isFull()) {
-      r.m_CMDScheduler.schedule(new CompactShooter().withTimeout(0.2));
+    if (!r.m_shooter.getReadyToShoot()) {
+      r.m_shooter.compact();
+      //r.m_CMDScheduler.schedule(new ClearIndexer(r.m_indexer).withTimeout(0.05));
     }
+ 
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    Robot r = TheRobot.getInstance();
-    boolean b = (r.m_indexer.SenseIndex1() || r.m_indexer.SenseIntakePC0());
-
-    if (b) {
-      r.m_indexer.compact();
-      r.m_shooter.setReadyToShoot(false);
-    } else {
-      r.m_indexer.stop();
-    }
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
     Robot r = TheRobot.getInstance();
-    r.m_indexer.stop();
+    r.m_shooter.stop();
+    r.m_shooter.setReadyToShoot(true);
   }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    Robot r = TheRobot.getInstance();
-    boolean b = (r.m_indexer.SenseIndex1() || r.m_indexer.SenseIntakePC0());
-
-    if (b) r.m_indexer.resetEncoders();
-
-    return !b;
+    return false;
   }
 }

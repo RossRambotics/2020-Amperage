@@ -73,6 +73,7 @@ public class OI extends SubsystemBase {
 //      System.out.println("Relay set to kForward");
       this.capture();
     }
+    
 
 
     // Blue X button
@@ -115,7 +116,7 @@ public class OI extends SubsystemBase {
      // System.out.println("DigitalOutput set to true");
       this.aim();
     } else {
-      m_drive.SetTargeting(false);
+      m_drive.SetPowerPortTargeting(false);
      // m_LEDrelay.set(false);
      // System.out.println("DigitalOutput set to false");
     }
@@ -124,7 +125,7 @@ public class OI extends SubsystemBase {
   // when the driver pushes the aim button
   private void aim() {
     // System.out.println("Aim!");
-    m_drive.SetTargeting(true);
+    m_drive.SetPowerPortTargeting(true);
   }
 
   // when the driver pushes the shoot button

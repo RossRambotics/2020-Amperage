@@ -30,13 +30,12 @@ public class ShooterLookUp // changes distance to speed and hood angle
 
     private void fillTableVaules() // adds the key value pairs to the lookup table <KEY, HoodAngle, ShooterRPM>
     {
-        addTableValue(1.0, 10.0, 4010.0);
-        addTableValue(2.0, 20.0, 4020.0);
-        addTableValue(3.0, 30.0, 4030.0);
-        addTableValue(4.0, 40.0, 4040.0);
-        addTableValue(5.0, 50.0, 4050.0);
-        addTableValue(6.1, 60.0, 4061.0);
-        addTableValue(7.5, 70.0, 4075.0);
+        addTableValue(2.0, 15.0, 4000.0);
+        addTableValue(3.0, 25.0, 4350.0);
+        addTableValue(3.5, 28.0, 4425.0);
+        addTableValue(4.0, 29.0, 4500.0);
+        addTableValue(5.0, 31.0, 5000.0);
+        addTableValue(6.0, 33.0, 5100.0);
     }
 
     public boolean isTargetFound() {
@@ -65,7 +64,7 @@ public class ShooterLookUp // changes distance to speed and hood angle
     public ShooterValueSet getCurrentValues(Boolean Interpolate) // gets the hood and shooter speed values; interpolate ~ if true finds values between two existing
     {
         //-- remove line below & comment when value table is complete Double distanceFromTarget = ntTble.getEntry("TargetDistance").getDouble(0);
-        Double distanceFromTarget = ntTble.getEntry("TargetDistanceTest").getDouble(3.5);
+        Double distanceFromTarget = ntTble.getEntry("TargetDistance").getDouble(3.5);
 
 
         if(Interpolate){

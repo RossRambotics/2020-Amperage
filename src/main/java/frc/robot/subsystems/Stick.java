@@ -7,18 +7,21 @@
 
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.TheRobot;
 
-// network tables
-import edu.wpi.first.networktables.NetworkTable;
+public class Stick extends SubsystemBase {
 
+  private Joystick m_joystick;
 
-public class PowerPortTargeter extends SubsystemBase {
   /**
-   * Creates a new PowerPortTargeter.
+   * Creates a new Stick.
+   * 
+   * @param joystick
    */
-  public PowerPortTargeter() {
+  public Stick(Joystick joystick) {
+    m_joystick = joystick;
 
   }
 
@@ -27,15 +30,12 @@ public class PowerPortTargeter extends SubsystemBase {
     // This method will be called once per scheduler run
   }
 
+  public void setRumble(RumbleType rumbleType) {
+    m_joystick.setRumble(rumbleType, 0.5);
+  }
 
-  // returns the distance to the Power Port
-  // returns zero if unknown
-  public double getDistance() {
-    // get the distance to the target from the network tables
-    //NetworkTable n = TheRobot.getInstance().m_drive.GetNetworkTable();
-    //double v = n.getEntry("TargetDistance").getDouble(0);
-    //TheRobot.log("TargetDistance: " + TheRobot.toString(v));
+  public void clearRumble(RumbleType rumbleType) {
+    m_joystick.setRumble(rumbleType, 0.0);
 
-    return 0;
   }
 }

@@ -33,6 +33,7 @@ public class IndexerCheckForNewPowerCell extends CommandBase {
 
     // adds the indexer as a requirement
     this.addRequirements(indexer);
+
   }
 
   // Called when the command is initially scheduled.
@@ -48,24 +49,26 @@ public class IndexerCheckForNewPowerCell extends CommandBase {
     Robot r = TheRobot.getInstance();
 
     // Do nothing if intake is not extended
-    if (r.m_intake.isExtended() == false) {
+    if (r.m_intake.isExtended() == false || r.m_indexer.isFull()) {
       return;
     }
     TheRobot.log("Checking for ball...");
 
     // Check to see if we see a power cell that we need 
     // to index into therobot
-    if (r.m_indexer.SenseIntakePC() == true) {
+    if (r.m_indexer.SenseIntakePC0() == true) {
       TheRobot.log("Ball Found.");
-      /*CommandBase c = new SequentialCommandGroup(
-        new RetractIntake(), 
-        new WaitCommand(0.25), 
-        new ExtendIntake(r.m_indexer),
-        new WaitCommand(0.25),
-        new CompactIndexer(r.m_indexer)
-        ));*/
-      
-        CommandBase c = new CompactIndexer(r.m_indexer);
+      CommandBase c = new SequentialCommandGroup(
+        //new RetractIntake(), 
+        //new WaitCommand(0.25), 
+        //new ExtendIntake(r.m_indexer),
+        //new WaitCommand(0.25),
+        new CompactIndexer(r.m_indexer),
+        new WaitCommand(0.1),
+        new ReverseCompactIndexer(r.m_indexer).withTimeout(0.5)
+        //new WaitCommand(0.25)
+        );
+      c.setName("Seq in CheckForNewPowerCell");
       r.m_CMDScheduler.schedule(c);
     }
   }
@@ -85,11 +88,13 @@ public class IndexerCheckForNewPowerCell extends CommandBase {
     Robot r = TheRobot.getInstance();
     boolean b = r.m_intake.isExtended();
 
+    /*
     if (b) {
       TheRobot.log("Check Intake... The Intake is extended.");
     } else {
       TheRobot.log("Check Intake... The Intake is NOT extended.");
     }
+    */
     
     return false;
   }

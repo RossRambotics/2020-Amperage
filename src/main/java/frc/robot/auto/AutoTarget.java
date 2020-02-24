@@ -5,41 +5,57 @@
 /* the project.                                                               */
 /*----------------------------------------------------------------------------*/
 
-package frc.robot.commands;
+package frc.robot.auto;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import edu.wpi.first.wpilibj2.command.Subsystem;
-import frc.robot.Robot;
-import frc.robot.TheRobot;
+import frc.robot.helper.*;
+import frc.robot.subsystems.Drive;
+import frc.robot.*;
 
-public class ClearIndexer extends CommandBase {
+/**
+ * Automatically find the target and end on target.
+ */
+
+public class AutoTarget extends CommandBase {
+  private Drive m_drive = null;
+  private ShooterLookUp m_lookUpTable = new ShooterLookUp();
   /**
-   * Creates a new ClearIndexer.
+   * Creates a new AutoTarget.
    */
-  public ClearIndexer(Subsystem indexer) {
+  public AutoTarget(Drive drive) {
     // Use addRequirements() here to declare subsystem dependencies.
-    this.addRequirements(indexer);
-    }
+
+    m_drive = drive;
+  }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    Robot r = TheRobot.getInstance();
-
-    this.addRequirements(r.m_indexer);
-    r.m_indexer.clear();
+    m_drive.enableBrakes(false);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
+    double targetAngle = m_lookUpTable.getTargetAngle();
+    double dFrame = m_lookUpTable.getFrameCounter();
+
+    if (true) {
+    TheRobot.log("Frame: " + TheRobot.toString(dFrame) +
+                 " TargetAngle: " + TheRobot.toString(targetAngle));
+    }
+
+    m_drive.TargetDriveSpin(targetAngle, dFrame);
+
+    return;
   }
+
+
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    Robot r = TheRobot.getInstance();
-    r.m_indexer.stop();
+    m_drive.enableBrakes(true);
   }
 
   // Returns true when the command should end.

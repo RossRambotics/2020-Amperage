@@ -37,6 +37,7 @@ public class Hood extends SubsystemBase {
 
   private double m_pid_kP, m_pid_kI, m_pid_kD, m_pid_kIz, m_pid_kFF;
   private double m_pid_kMaxOutput, m_pid_kMinOutput, m_pid_maxRPM;
+  private double m_dTargetAngle = 0;
 
   // 55/18 --- ratio of the 2 sprockets
   // * 4   --- 4:1 gear box
@@ -89,6 +90,8 @@ public class Hood extends SubsystemBase {
     SmartDashboard.putNumber("Hood/Min Output", m_pid_kMinOutput);
     SmartDashboard.putNumber("Hood/Motor Power", m_motorHood.get());
     SmartDashboard.putNumber("Hood/Angle Manual", 0);
+    SmartDashboard.putNumber("Hood/Target Angle", m_dTargetAngle);
+    SmartDashboard.putNumber("Hood/Angle", m_position_target / Hood.kRotationsPerDegree);
 
 
   }
@@ -106,6 +109,8 @@ public class Hood extends SubsystemBase {
     double max = SmartDashboard.getNumber("Hood/Max Output", 0);
     double min = SmartDashboard.getNumber("Hood/Min Output", 0);
     double manualHoodAngle = SmartDashboard.getNumber("Hood/Angle Manual", 0);
+    SmartDashboard.putNumber("Hood/Target Angle", m_dTargetAngle);
+    SmartDashboard.putNumber("Hood/Angle", m_position_target / Hood.kRotationsPerDegree);
 
 
     // if PID coefficients on SmartDashboard have changed, write new values to controller
@@ -131,9 +136,10 @@ public class Hood extends SubsystemBase {
     } else if (m_extended == true) {
       ShooterValueSet m_values = m_lookUpTable.getCurrentValues(false);
       //ShooterValueSet m_values = new ShooterValueSet(45.0, 45.0);
-      //m_position_target = m_values.hoodAngle * Hood.kRotationsPerDegree; 
+      m_dTargetAngle = m_values.hoodAngle;
+      m_position_target = m_dTargetAngle * Hood.kRotationsPerDegree; 
 
-      m_position_target = 55.0 * Hood.kRotationsPerDegree;  
+      //m_position_target = 55.0 * Hood.kRotationsPerDegree;  
       TheRobot.log("--------Hood Target:  " + TheRobot.toString(m_position_target));
     } else {
       m_position_target = 0.01;
@@ -158,8 +164,7 @@ public class Hood extends SubsystemBase {
  
 
     // get distance to target
-    double d = r.m_powerPowerTargeter.getDistance();
-    ShooterValueSet m_values = m_lookUpTable.getCurrentValues(false);
+    ShooterValueSet m_values = m_lookUpTable.getCurrentValues(true);
 
     // tell shooter to come up to target speed based on distance
   

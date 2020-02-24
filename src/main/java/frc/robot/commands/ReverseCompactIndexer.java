@@ -12,14 +12,11 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.Robot;
 import frc.robot.TheRobot;
 
-// moves the power cells in the indexer past the 1st sensor
-// allowing room for next power cell to be inserted
-public class CompactIndexer extends CommandBase {
-
+public class ReverseCompactIndexer extends CommandBase {
   /**
-   * Creates a new CompactIndexer.
+   * Creates a new ReverseCompactIndexer.
    */
-  public CompactIndexer(Subsystem indexer) {
+  public ReverseCompactIndexer(Subsystem indexer) {
     // Use addRequirements() here to declare subsystem dependencies.
     this.addRequirements(indexer);
   }
@@ -29,20 +26,16 @@ public class CompactIndexer extends CommandBase {
   public void initialize() {
     Robot r = TheRobot.getInstance();
     r.m_indexer.resetEncoders();
-    if (r.m_indexer.isFull()) {
-      r.m_CMDScheduler.schedule(new CompactShooter().withTimeout(0.2));
-    }
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
     Robot r = TheRobot.getInstance();
-    boolean b = (r.m_indexer.SenseIndex1() || r.m_indexer.SenseIntakePC0());
+    boolean b = (r.m_indexer.SenseIndex2());
 
-    if (b) {
-      r.m_indexer.compact();
-      r.m_shooter.setReadyToShoot(false);
+    if (!b) {
+      r.m_indexer.reverseCompact();
     } else {
       r.m_indexer.stop();
     }
@@ -59,10 +52,10 @@ public class CompactIndexer extends CommandBase {
   @Override
   public boolean isFinished() {
     Robot r = TheRobot.getInstance();
-    boolean b = (r.m_indexer.SenseIndex1() || r.m_indexer.SenseIntakePC0());
+    boolean b = (r.m_indexer.SenseIndex2());
 
-    if (b) r.m_indexer.resetEncoders();
+    if (!b) r.m_indexer.resetEncoders();
 
-    return !b;
+    return b;
   }
 }

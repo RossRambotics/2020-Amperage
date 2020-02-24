@@ -38,6 +38,7 @@ public class IndexNewPowerCell extends CommandBase {
     Robot r = TheRobot.getInstance();
 
     // start trying to index a power cell
+    // TODO - try compact???
     r.m_indexer.advance();
   }
 
@@ -55,7 +56,7 @@ public class IndexNewPowerCell extends CommandBase {
 
     // Check to see if we see a power cell that we need 
     // to index into the robot
-    if (r.m_indexer.SenseIntakePC() == false) {
+    if (r.m_indexer.SenseIntakePC0() == false) {
       // the ball either was indexed or not...
       r.m_indexer.stop();
       return true;

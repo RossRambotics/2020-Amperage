@@ -9,10 +9,12 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 // add subsystems
@@ -21,9 +23,13 @@ import frc.robot.subsystems.ControlPanel;
 import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.Indexer;
 import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.PowerCellTargeter;
 import frc.robot.subsystems.Shooter;
-import frc.robot.subsystems.PowerPortTargeter;
+import frc.robot.subsystems.Stick;
+import frc.robot.subsystems.ledController;
 import frc.robot.subsystems.Hood;
+import frc.robot.auto.AutoTarget;
+import frc.robot.auto.DriveStriaghtWEncoders;
 import frc.robot.commands.*;
 
 
@@ -47,13 +53,15 @@ public class Robot extends TimedRobot {
   public Indexer m_indexer = null;
   public Intake m_intake = null;
   public Shooter m_shooter = null;
-  public PowerPortTargeter m_powerPowerTargeter = null;
   public Hood m_hood = null;
+  public ledController m_LEDs = null;
+  public PowerCellTargeter m_PCTargeter = null;
   public CommandScheduler m_CMDScheduler = null;
 
   private static final String UNKNOWN = "Unknown";
 
   private final Timer m_timer = new Timer();
+  private Stick m_DriverStick = null;
  
 
   public Robot() {
@@ -69,45 +77,74 @@ public class Robot extends TimedRobot {
   {
     TheRobot.log("robotInit.");
 
-    m_OI = new OI();
     m_climber = new Climber();
     m_controlPanel = new ControlPanel(); 
-    m_drive = new Drive(m_OI.getDriverStick());
+    m_drive = new Drive();
     m_intake = new Intake();
     m_indexer = new Indexer();
     m_shooter = new Shooter();
-    m_powerPowerTargeter = new PowerPortTargeter();
     m_hood = new Hood();
-  
+    m_PCTargeter = new PowerCellTargeter();
+    m_LEDs = new ledController();
 
 
     // Setup the singleton for easy access to the robot and subsystems
     m_robotContainer = new RobotContainer();
+    m_DriverStick = new Stick(m_robotContainer.getDriverStick());
 
     // Get the scheduler
     m_CMDScheduler = CommandScheduler.getInstance();
 
     // initialize the subsystems
-      m_OI.SetDrive(m_drive);
   
     // add commands to Dashboard
-    SmartDashboard.putData("Commands/Shoot!", new Shoot());
+    CommandBase c;
+    SmartDashboard.putData("Commands/Shoot!", new Shoot(m_indexer));
     SmartDashboard.putData("Commands/Retract Intake!", new RetractIntake());    
     SmartDashboard.putData("Commands/Extend Intake!", new ExtendIntake(m_indexer));
     SmartDashboard.putData("Commands/Indexer/CheckForNewPC!", new IndexerCheckForNewPowerCell(m_indexer));
     SmartDashboard.putData("Commands/Indexer/IndexNewPC!", new IndexNewPowerCell());
     SmartDashboard.putData("Commands/Indexer/CompactIndexer!", new CompactIndexer(m_indexer));
+    SmartDashboard.putData("Commands/Indexer/CompactShooter!", new CompactShooter().withTimeout(0.2));
+
+    c = new SequentialCommandGroup(
+      new AutoTarget(m_drive).withTimeout(3.0),
+      new Shoot(m_indexer).withTimeout(5.0)
+    );
+
+    c.setName("Auto Target & Shoot");
+    SmartDashboard.putData("Commands/Auto/Auto Target & Shoot!", c);
     
-    CommandBase c = new SequentialCommandGroup(
+    c = new ReverseCompactIndexer(m_indexer).withTimeout(0.5);
+    c.setName("Reverse Compact");
+    SmartDashboard.putData("Commands/Indexer/RevCompactIndexer!", c);
+
+    c = new Rumble(m_DriverStick, RumbleType.kLeftRumble).withTimeout(1.0);
+    c.setName("Rumble");
+    SmartDashboard.putData("Commands/Rumble !", c);
+
+    c = new ParallelRaceGroup(
+      new ClearIndexer(m_indexer).withTimeout(0.1),
+      new CompactShooter().withTimeout(0.1)
+    );
+    c.setName("Prepare to Shoot!");
+    SmartDashboard.putData("Commands/Shooter/Prepare!", c); 
+
+    c = new SequentialCommandGroup(
       new RetractIntake(), 
       new WaitCommand(0.25), 
       new ExtendIntake(m_indexer),
-      new CompactIndexer(m_indexer));
+      new CompactIndexer(m_indexer),
+      new WaitCommand(0.25)
+      );
 
       c.setName("Smash & Compact");
       SmartDashboard.putData("Commands/Indexer/Smash & Compact!", c); 
 
-    
+    // 1 meter, 0.2 power
+    c = new DriveStriaghtWEncoders(m_drive, 1, .2).withTimeout(2);
+    c.setName("TestDriveStraight");
+    SmartDashboard.putData("Commands/Drive/TestDriveStraight", c);
   }
 
   /**
@@ -117,7 +154,7 @@ public class Robot extends TimedRobot {
   public void autonomousInit() {
     m_timer.reset();
     m_timer.start();
-
+    
 
   }
 
@@ -245,6 +282,10 @@ public class Robot extends TimedRobot {
   public void testInit() {
     // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();
+  }
+
+  public Stick getDriverStick() {
+    return m_DriverStick;
   }
 
 }
