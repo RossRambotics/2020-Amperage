@@ -86,6 +86,9 @@ public class Climber extends SubsystemBase {
     m_WRM_Encoder = m_RightWinchMotor.getEncoder();
     m_WRM_Encoder.setPosition(0);
 
+    SmartDashboard.putNumber("Climber/Left Motor Rotations", m_LLM_Encoder.getPosition());
+    SmartDashboard.putNumber("Climber/Right Motor Rotations", m_LRM_Encoder.getPosition());
+
     m_OperatorStick =  new Joystick(1); // Operator joystick
 
     m_LeftLiftMotor.setIdleMode(IdleMode.kBrake);
@@ -152,9 +155,13 @@ public class Climber extends SubsystemBase {
     if (Math.abs(dvalueRXAxis) < m_deadzone) dvalueRXAxis = 0;
     if (Math.abs(dvalueRYAxis) < m_deadzone) dvalueRYAxis = 0;
 
+    // TODO --- Get rid of these???
     SmartDashboard.getEntry("LWEPosition").setDouble(m_WLM_Encoder.getPosition());
     SmartDashboard.getEntry("LLEPosition").setDouble(m_LLM_Encoder.getPosition());
     SmartDashboard.getEntry("m_liftWinchConstant").setDouble(m_liftWinchConstant);
+
+    SmartDashboard.putNumber("Climber/Left Motor Rotations", m_LLM_Encoder.getPosition());
+    SmartDashboard.putNumber("Climber/Right Motor Rotations", m_LRM_Encoder.getPosition());
 
     // This method will be called once per scheduler run
     // read PID coefficients from SmartDashboard
@@ -262,7 +269,7 @@ public class Climber extends SubsystemBase {
   public void retractWinch(eRobotSide w)
   {
     if (w == eRobotSide.LEFT) {
-      m_LeftWinchMotor.set(m_WinchSpeed);
+      m_LeftWinchMotor.set(-m_WinchSpeed);
     } else {
       m_RightWinchMotor.set(m_WinchSpeed);
     }

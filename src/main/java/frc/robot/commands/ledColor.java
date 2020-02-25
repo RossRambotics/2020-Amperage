@@ -6,6 +6,6 @@ public enum ledColor {
     kOnTarget,
     kTargetNotFound,
     kNormal,
-    kTargetFound;
+    kTargetFound, kSlow;
 
 }

@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.TheRobot;
 import frc.robot.commands.Rumble;
+import frc.robot.commands.ledColor;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
@@ -50,8 +51,9 @@ public class Drive extends SubsystemBase {
   private DifferentialDrive m_differentialDrive = new DifferentialDrive(m_leftMotor, m_rightMotor);
   private double m_dOpenLoopRamp = 0.6;
   private boolean m_bUseJoystick = true;
+  private boolean m_bSlowDrive = false;
   
-
+  private ledColor m_LEDColor = ledColor.kNormal;
 
   /**
    * Creates a new Drive.
@@ -66,7 +68,7 @@ public class Drive extends SubsystemBase {
     m_driverStick =  new Joystick(0); // drivers joystick
 
 
-    SmartDashboard.putNumber("Drive/Max Power", m_maxPower);
+    SmartDashboard.putNumber("Drive/Max Power", m_dCurrentMaxPower);
     SmartDashboard.putNumber("Drive/Power Ramp Time", m_dOpenLoopRamp);
 
 
@@ -81,10 +83,15 @@ public class Drive extends SubsystemBase {
   }
 
   private double m_deadzone = 0.05;
-  private double m_maxPower = 0.75;
+  private double m_dSlowMaxPower = 0.5;
+  private double m_dFastMaxPower = 0.75;
+  private double m_dCurrentMaxPower = 0.75;
+  private int m_iLEDIndexFullCounter = 0;
 
   @Override
   public void periodic() {
+    Robot r = TheRobot.getInstance();
+
     // This method will be called once per scheduler run
 
     // get/set drive style
@@ -95,7 +102,7 @@ public class Drive extends SubsystemBase {
     m_dTargetSpinP = SmartDashboard.getNumber("Targeting/Spin P", 0);
     m_dTargetSpinDeadZone = SmartDashboard.getNumber("Targeting/Spin Dead Zone", 0);
 
-    m_maxPower = SmartDashboard.getNumber("Drive/Max Power", 0);
+    m_dCurrentMaxPower = SmartDashboard.getNumber("Drive/Max Power", 0);
     double d = SmartDashboard.getNumber("Drive/Power Ramp Time", 0);
 
     if (d != m_dOpenLoopRamp) {
@@ -104,7 +111,21 @@ public class Drive extends SubsystemBase {
       m_rightMotor.configOpenloopRamp(m_dOpenLoopRamp);
     }
 
+    if (!m_bSlowDrive) {
+      m_LEDColor = ledColor.kNormal;
+    } else {
+      m_LEDColor = ledColor.kSlow;
+    }
 
+    // If the indexer is full
+    // Only display for a second
+    /*
+    if (r.m_indexer.isFull() && m_iLEDIndexFullCounter < 50) {
+      m_LEDColor = ledColor.kIndexerFull;
+      m_iLEDIndexFullCounter++;
+    } else if (!r.m_indexer.isFull()) { 
+      m_iLEDIndexFullCounter = 0;
+    }*/
    
 
     // drive the robot with the joysticks
@@ -125,30 +146,24 @@ public class Drive extends SubsystemBase {
     if (Math.abs(dvalueRYAxis) < m_deadzone) dvalueRYAxis = 0;
 
     // enforce maximums on joysticks
-    if (Math.abs(dvalueLYAxis) > m_maxPower) {
-      if (dvalueLYAxis > 0) dvalueLYAxis = m_maxPower; else dvalueLYAxis = -m_maxPower;
+    if (Math.abs(dvalueLYAxis) > m_dCurrentMaxPower) {
+      if (dvalueLYAxis > 0) dvalueLYAxis = m_dCurrentMaxPower; else dvalueLYAxis = -m_dCurrentMaxPower;
     }
-    if (Math.abs(dvalueLXAxis) > m_maxPower) {
-      if (dvalueLXAxis > 0) dvalueLXAxis = m_maxPower; else dvalueLXAxis = -m_maxPower;
+    if (Math.abs(dvalueLXAxis) > m_dCurrentMaxPower) {
+      if (dvalueLXAxis > 0) dvalueLXAxis = m_dCurrentMaxPower; else dvalueLXAxis = -m_dCurrentMaxPower;
     }
-    if (Math.abs(dvalueRYAxis) > m_maxPower) {
-      if (dvalueRYAxis > 0) dvalueRYAxis = m_maxPower; else dvalueRYAxis = -m_maxPower;
+    if (Math.abs(dvalueRYAxis) > m_dCurrentMaxPower) {
+      if (dvalueRYAxis > 0) dvalueRYAxis = m_dCurrentMaxPower; else dvalueRYAxis = -m_dCurrentMaxPower;
     }
-    if (Math.abs(dvalueRXAxis) > m_maxPower) {
-      if (dvalueRXAxis > 0) dvalueRXAxis = m_maxPower; else dvalueRXAxis = -m_maxPower;
+    if (Math.abs(dvalueRXAxis) > m_dCurrentMaxPower) {
+      if (dvalueRXAxis > 0) dvalueRXAxis = m_dCurrentMaxPower; else dvalueRXAxis = -m_dCurrentMaxPower;
     }
 
     // drive the robot in manual mode
     if (!(m_bPowerPortTargeting || m_bPowerCellTargeting)) {
       this.JustDrive(dvalueLYAxis, dvalueRYAxis, dvalueLXAxis, dvalueRXAxis);
 
-      // If the indexer is full
-      Robot r = TheRobot.getInstance();
-      if (r.m_indexer.isFull()) {
-        r.m_LEDs.setColor(frc.robot.commands.ledColor.kIndexerFull);
-      } else {
-        r.m_LEDs.setColor(frc.robot.commands.ledColor.kNormal);
-      }
+
       
     } else if(m_bPowerPortTargeting) {
       this.PowerPortTargetDrive(dvalueLYAxis, dvalueRYAxis, dvalueLXAxis, dvalueRXAxis);
@@ -156,7 +171,7 @@ public class Drive extends SubsystemBase {
       this.PowerCellTargetDrive(dvalueLYAxis, dvalueRYAxis, dvalueLXAxis, dvalueRXAxis);
     }
 
-
+    r.m_LEDs.setColor(m_LEDColor);
   }
 
   public void enableBrakes(boolean enable) {
@@ -183,9 +198,9 @@ public class Drive extends SubsystemBase {
     if (!m_lookUpTable.isTargetFound()) {
       CommandBase c = new Rumble(r.getDriverStick(), RumbleType.kLeftRumble);
       r.m_CMDScheduler.schedule(c.withTimeout(1.0));
-      r.m_LEDs.setColor(frc.robot.commands.ledColor.kTargetNotFound);
+      m_LEDColor = ledColor.kTargetNotFound;
     } else {
-      r.m_LEDs.setColor(frc.robot.commands.ledColor.kTargetFound);
+      m_LEDColor = ledColor.kTargetFound;
     }
 
     if (dvalueLYAxis == 0 && dvalueRYAxis == 0) {
@@ -231,9 +246,9 @@ public class Drive extends SubsystemBase {
 
     // If the target isn't found let the driver know
     if (!r.m_PCTargeter.isPowerCellFound()) {
-      r.m_LEDs.setColor(frc.robot.commands.ledColor.kTargetNotFound);
+      m_LEDColor = ledColor.kTargetNotFound;
     } else {
-      r.m_LEDs.setColor(frc.robot.commands.ledColor.kTargetFound);
+      m_LEDColor = ledColor.kTargetFound;
     }
 
     if (dvalueLYAxis == 0 && dvalueRYAxis == 0) {
@@ -270,16 +285,16 @@ public class Drive extends SubsystemBase {
   private double m_dLastFrame = 0; // keep track of the previous frame processed by vision
   public void TargetDriveSpin(double targetAngle, double frame) {
     double steer = targetAngle/45.0;
-    Robot r = TheRobot.getInstance();
 
     if (Math.abs(targetAngle) <= m_dTargetSpinDeadZone){
       m_differentialDrive.arcadeDrive(0, 0, false);
       steer = 0;
+      SmartDashboard.putNumber("Targeting/Spin Steer", steer);
       m_bPowerPortTargetingAligned = true;
-      r.m_LEDs.setColor(frc.robot.commands.ledColor.kOnTarget);
+      m_LEDColor = ledColor.kOnTarget;
+      return;
     } else {
       m_bPowerPortTargetingAligned = false;
-      r.m_LEDs.setColor(frc.robot.commands.ledColor.kTargetFound);
     }
 
     // if we don't have any new information don't do anything new
@@ -297,12 +312,15 @@ public class Drive extends SubsystemBase {
 
     steer = steer * m_dTargetSpinP;
 
+    // use dNudge to slowly back robot up if angle is very small
+    double dNudge = 0;
     if (Math.abs(steer) < m_dTargetMinPower) {
       if (steer < 0) steer = -m_dTargetMinPower;
       if (steer > 0) steer = m_dTargetMinPower;
+      dNudge = Math.abs(m_dTargetMinPower)/2.0;
     }
 
-    m_differentialDrive.arcadeDrive(0, steer, false);
+    m_differentialDrive.arcadeDrive(-dNudge, steer, false);
     SmartDashboard.putNumber("Targeting/Spin Steer", steer);
   }
 
@@ -372,6 +390,16 @@ public double getRightEncoderPosition()
 
   public void SetUseJoystick(boolean b) {
     m_bUseJoystick = b;
+  }
+
+  public void ToggleSlowDrive() {
+    m_bSlowDrive = !m_bSlowDrive;
+
+    if (m_bSlowDrive) {
+      m_dCurrentMaxPower = m_dSlowMaxPower;
+    } else {
+      m_dCurrentMaxPower = m_dFastMaxPower;
+    }
   }
 /*
   public void resetEncoders() {

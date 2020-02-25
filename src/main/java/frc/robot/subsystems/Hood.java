@@ -38,6 +38,7 @@ public class Hood extends SubsystemBase {
   private double m_pid_kP, m_pid_kI, m_pid_kD, m_pid_kIz, m_pid_kFF;
   private double m_pid_kMaxOutput, m_pid_kMinOutput, m_pid_maxRPM;
   private double m_dTargetAngle = 0;
+  private double m_dLowTargetMode = 90.0; // degress for hood for low power port
 
   // 55/18 --- ratio of the 2 sprockets
   // * 4   --- 4:1 gear box
@@ -127,12 +128,14 @@ public class Hood extends SubsystemBase {
     // If a manual hood angle is specific go there
     // Otherwise if the hood should be exteneded use the lookup table
     //        or retract
-    
+    Robot r = TheRobot.getInstance();
     if (manualHoodAngle > 0) {
       m_position_target = manualHoodAngle * Hood.kRotationsPerDegree;
       TheRobot.log("Hood target rot: " + TheRobot.toString(m_position_target));
       TheRobot.log("Hood RperD: " + TheRobot.toString(Hood.kRotationsPerDegree));
       TheRobot.log("Hood target deg: " + TheRobot.toString(manualHoodAngle));
+    } else if (r.m_shooter.isLowPortEnabled()) {
+      m_position_target = m_dLowTargetMode * Hood.kRotationsPerDegree;
     } else if (m_extended == true) {
       ShooterValueSet m_values = m_lookUpTable.getCurrentValues(false);
       //ShooterValueSet m_values = new ShooterValueSet(45.0, 45.0);

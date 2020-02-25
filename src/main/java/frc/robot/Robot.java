@@ -7,9 +7,11 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.Sendable;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
@@ -26,7 +28,7 @@ import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.PowerCellTargeter;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Stick;
-import frc.robot.subsystems.ledController;
+import frc.robot.subsystems.LEDController;
 import frc.robot.subsystems.Hood;
 import frc.robot.auto.AutoTarget;
 import frc.robot.auto.DriveStriaghtWEncoders;
@@ -54,7 +56,7 @@ public class Robot extends TimedRobot {
   public Intake m_intake = null;
   public Shooter m_shooter = null;
   public Hood m_hood = null;
-  public ledController m_LEDs = null;
+  public LEDController m_LEDs = null;
   public PowerCellTargeter m_PCTargeter = null;
   public CommandScheduler m_CMDScheduler = null;
 
@@ -85,7 +87,7 @@ public class Robot extends TimedRobot {
     m_shooter = new Shooter();
     m_hood = new Hood();
     m_PCTargeter = new PowerCellTargeter();
-    m_LEDs = new ledController();
+    m_LEDs = new LEDController();
 
 
     // Setup the singleton for easy access to the robot and subsystems
@@ -106,6 +108,52 @@ public class Robot extends TimedRobot {
     SmartDashboard.putData("Commands/Indexer/IndexNewPC!", new IndexNewPowerCell());
     SmartDashboard.putData("Commands/Indexer/CompactIndexer!", new CompactIndexer(m_indexer));
     SmartDashboard.putData("Commands/Indexer/CompactShooter!", new CompactShooter().withTimeout(0.2));
+
+    SmartDashboard.putNumber("Auto/Move Distance", 0.0);
+
+    /* 
+     *
+     * Begin autonomous setup of commands 
+     * 
+     */
+    SendableChooser<CommandBase> autoChooser = new SendableChooser<CommandBase>();
+
+    autoChooser.setDefaultOption("Do Nothing", new CompactIndexer(m_indexer));
+
+    /*
+     * Aim & Shoot!
+     */
+    c = new SequentialCommandGroup(
+      new AutoTarget(m_drive).withTimeout(3.0),
+      new Shoot(m_indexer).withTimeout(5.0)
+    );
+    autoChooser.addOption("Shoot Only",c);
+
+    /*
+     * Aim, Shoot & Drive Forward 1m
+     */
+    c = new SequentialCommandGroup(
+      new AutoTarget(m_drive).withTimeout(3.0),
+      new Shoot(m_indexer).withTimeout(5.0),
+      new DriveStriaghtWEncoders(m_drive, 1.0, 0.25)
+    );
+    autoChooser.addOption("Shoot and Move Forward", c);
+
+    /*
+     * Aim, Shoot & Drive Backward 1m
+     */
+    c = new SequentialCommandGroup(
+      new AutoTarget(m_drive).withTimeout(3.0),
+      new Shoot(m_indexer).withTimeout(5.0),
+      new DriveStriaghtWEncoders(m_drive, -1.0, 0.25)
+    );
+    autoChooser.addOption("Shoot and Move Backward", new CompactIndexer(m_indexer));
+    SmartDashboard.putData("Auto/Selected", autoChooser);  //SendableChooser for autocommand
+
+    /* 
+     * End autonomous command groups
+     * 
+     */
 
     c = new SequentialCommandGroup(
       new AutoTarget(m_drive).withTimeout(3.0),
@@ -155,7 +203,15 @@ public class Robot extends TimedRobot {
     m_timer.reset();
     m_timer.start();
     
+    double autoMoveDistance = SmartDashboard.getNumber("Auto/Move Distance", 0.0);
+    // the distance to move with the appriate auto command
+    CommandBase autoSelected = (CommandBase) SmartDashboard.getData("Auto/Selector");
+    
 
+    if(autoSelected != null)
+    {
+      autoSelected.schedule();
+    }
   }
 
   /**
@@ -176,6 +232,11 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopInit() {
+    
+    if(m_autonomousCommand != null)
+    {
+      m_autonomousCommand.cancel();
+    }
   }
 
   /**

@@ -12,7 +12,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.commands.ledColor;
 
-public class ledController extends SubsystemBase {
+public class LEDController extends SubsystemBase {
   private double m_Color = 0.0;
   private Spark m_ledController = new Spark(0);
 
@@ -23,7 +23,7 @@ public class ledController extends SubsystemBase {
 
 
 
-  public ledController() {
+  public LEDController() {
     SmartDashboard.putNumber("LEDController/color", m_Color);
   
   }
@@ -38,18 +38,22 @@ public class ledController extends SubsystemBase {
   public void setColor(ledColor color) {
     switch(color) {
       case kIndexerFull:
-        m_Color = 0.97;
+        m_Color = 0.65; // ORANGE
         break;
       case kTargetFound:
-        m_Color = 0.69;
+        m_Color = 0.69; // YELLOW
         break;
       case kTargetNotFound:
-        m_Color = 0.65;
+        m_Color = 0.61; // RED
+        break;
       case kOnTarget:
-        m_Color = 0.77;
+        m_Color = 0.77; // GREEN
+        break;
+      case kSlow:
+        m_Color = 0.87; // BLUE
       case kNormal:
       default:
-        m_Color = 0.91;
+        m_Color = 0.91; // VIOLET
     }
   }
 

@@ -28,10 +28,8 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   //private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
 
-  private final Command m_autoCommand = null;
   private Joystick m_DriverStick = new Joystick(0);
   private Joystick m_OperatorStick = new Joystick(1); // operators joystick
-
 
   /**
    * The container for the robot.  Contains subsystems, OI devices, and commands.
@@ -95,22 +93,38 @@ public class RobotContainer {
     );
     rightShoulderButton.whenPressed(c);
 
+    // Click left stick to toggle gears
+    JoystickButton leftStickClick = new JoystickButton(m_DriverStick, 9);
+    leftStickClick.whenPressed(new ToggleSlowDrive());
+    
+    //click Y to target low Power Port
+    JoystickButton yButton = new JoystickButton(m_DriverStick, 4);
+    yButton.whenPressed(new ToggleLowPowerPort());
+
     // configure operator buttons
+    // start button - activate top indexer
+    JoystickButton startButtonOperator = new JoystickButton(m_OperatorStick, 8); // the button runs the indexer
+    startButtonOperator.whileHeld(new frc.robot.commands.RunIndexer(r.m_indexer));
+    
+    // back button - clear indexer
+    JoystickButton backButtonOperator = new JoystickButton(m_OperatorStick, 7); // the buttom runs the indexer
+    backButtonOperator.whileHeld(new frc.robot.commands.ClearIndexer(r.m_indexer));
+
     // Winch up / Retract right side
     JoystickButton operatorRightTrigger = new JoystickAnalogButton(m_OperatorStick, 3);
     operatorRightTrigger.whileHeld(new frc.robot.commands.RetractClimbWinch(eRobotSide.RIGHT));
 
     // Winch down / Release right side
-    JoystickButton operatorRightShoulder = new JoystickButton(m_OperatorStick, 6);;
-    operatorRightShoulder.whileHeld(new frc.robot.commands.RetractClimbWinch(eRobotSide.RIGHT));    
+    //JoystickButton operatorRightShoulder = new JoystickButton(m_OperatorStick, 6);;
+    //operatorRightShoulder.whileHeld(new frc.robot.commands.RetractClimbWinch(eRobotSide.RIGHT));    
     
     // Winch up / Retract left side
     JoystickButton operatorLeftTrigger = new JoystickAnalogButton(m_OperatorStick, 2);
-    operatorLeftTrigger.whileHeld(new frc.robot.commands.ReleaseClimbWinch(eRobotSide.LEFT));
+    operatorLeftTrigger.whileHeld(new frc.robot.commands.RetractClimbWinch(eRobotSide.LEFT));
 
     // Winch down / Release left side
-    JoystickButton operatorLeftShoulder = new JoystickButton(m_OperatorStick, 5);;
-    operatorLeftShoulder.whileHeld(new frc.robot.commands.ReleaseClimbWinch(eRobotSide.RIGHT));
+    //JoystickButton operatorLeftShoulder = new JoystickButton(m_OperatorStick, 5);;
+    //operatorLeftShoulder.whileHeld(new frc.robot.commands.ReleaseClimbWinch(eRobotSide.RIGHT));
     
     // Lift section
     // Lift up / Retract right side
@@ -129,17 +143,6 @@ public class RobotContainer {
     JoystickButton operatorLeftDown = new JoystickAnalogButton(m_OperatorStick, 4, -0.5);;
     operatorLeftDown.whileHeld(new frc.robot.commands.ReleaseClimbWinch(eRobotSide.RIGHT));
     */
-  }
-
-
-  /**
-   * Use this to pass the autonomous command to the main {@link Robot} class.
-   *
-   * @return the command to run in autonomous
-   */
-  public Command getAutonomousCommand() {
-    // An ExampleCommand will run in autonomous
-    return m_autoCommand;
   }
 
   public Joystick getDriverStick() {

@@ -43,6 +43,10 @@ public class Shooter extends SubsystemBase {
   private boolean m_bTuning = false;
   private double m_dTuningRPM = 4000;
 
+  private double m_dLowPortRPM = 500;
+  private double m_dLowPortAngle = 90;
+  private boolean m_bToggleLowPort = false;
+
   private boolean m_bReadyToShoot = false;  // is the shooter ready? 
                                             // Here to prevent multiple  back ups
   
@@ -204,6 +208,7 @@ public class Shooter extends SubsystemBase {
     // set the target RPM
     m_RPM_target = m_Values.shooterRPM;
     if (m_bTuning) m_RPM_target = m_dTuningRPM;
+    if (m_bToggleLowPort) m_RPM_target = m_dLowPortRPM; // If low power port enabled use low RPM
 
     // set the PID Controller to hit the RPM
     m_pidController.setReference(m_RPM_target, ControlType.kVelocity);
@@ -231,12 +236,19 @@ public class Shooter extends SubsystemBase {
     m_bReadyToShoot = b;
   }
 
-public boolean getReadyToShoot() {
-	return m_bReadyToShoot;
-}
+  public boolean getReadyToShoot() {
+    return m_bReadyToShoot;
+  }
 
-public void setLEDRing(Boolean Powered){ // sets the state of the led ring
-  m_LEDrelay.set(Powered);
-}
+  public void setLEDRing(Boolean Powered){ // sets the state of the led ring
+    m_LEDrelay.set(Powered);
+  }
 
+  public void ToggleLowPort() {
+    m_bToggleLowPort = !m_bToggleLowPort;
+  }
+
+  public boolean isLowPortEnabled() {
+    return m_bToggleLowPort;
+  }
 }
