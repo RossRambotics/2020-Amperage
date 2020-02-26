@@ -73,7 +73,7 @@ public class RobotContainer {
     xButton.toggleWhenPressed(new frc.robot.commands.ExtendIntake(r.m_indexer), true);
 
     // left trigger - activate targeting
-    JoystickButton leftTrigger = new JoystickAnalogButton(m_DriverStick, 2); // the trigger associated with targeting
+    JoystickButton leftTrigger = new JoystickAnalogButton(m_DriverStick, 2, 0.05); // the trigger associated with targeting
     leftTrigger.whenHeld(new frc.robot.commands.Target());
 
     // start button - activate top indexer

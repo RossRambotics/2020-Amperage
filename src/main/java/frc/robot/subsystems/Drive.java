@@ -38,7 +38,7 @@ public class Drive extends SubsystemBase {
   private boolean m_bPowerPortTargetingAligned = false;
   private double m_dTargetMaxPower = 0.4;
   private double m_dTargetMinPower = 0.1;
-  private double m_dTargetSpinP = 0.4;
+  private double m_dTargetSpinP = 0.5;
   private double m_dTargetSpinDeadZone = 1.0;
 
   private ShooterLookUp m_lookUpTable = null; // look up table for shooter values
@@ -101,6 +101,9 @@ public class Drive extends SubsystemBase {
     m_dTargetMinPower = SmartDashboard.getNumber("Targeting/Min Power", 0);
     m_dTargetSpinP = SmartDashboard.getNumber("Targeting/Spin P", 0);
     m_dTargetSpinDeadZone = SmartDashboard.getNumber("Targeting/Spin Dead Zone", 0);
+    SmartDashboard.putNumber("Drive/Left Encoder", m_leftMotor.getSelectedSensorPosition());
+    SmartDashboard.putNumber("Drive/Right Encoder", m_rightMotor.getSelectedSensorPosition());
+
 
     m_dCurrentMaxPower = SmartDashboard.getNumber("Drive/Max Power", 0);
     double d = SmartDashboard.getNumber("Drive/Power Ramp Time", 0);
@@ -171,6 +174,7 @@ public class Drive extends SubsystemBase {
       this.PowerCellTargetDrive(dvalueLYAxis, dvalueRYAxis, dvalueLXAxis, dvalueRXAxis);
     }
 
+    //r.m_LEDs.setColor(m_LEDColor);
     r.m_LEDs.setColor(m_LEDColor);
   }
 
@@ -196,8 +200,8 @@ public class Drive extends SubsystemBase {
     // If the target isn't found let the driver know
     Robot r = TheRobot.getInstance();
     if (!m_lookUpTable.isTargetFound()) {
-      CommandBase c = new Rumble(r.getDriverStick(), RumbleType.kLeftRumble);
-      r.m_CMDScheduler.schedule(c.withTimeout(1.0));
+      //CommandBase c = new Rumble(r.getDriverStick(), RumbleType.kLeftRumble);
+      //r.m_CMDScheduler.schedule(c.withTimeout(1.0));
       m_LEDColor = ledColor.kTargetNotFound;
     } else {
       m_LEDColor = ledColor.kTargetFound;
@@ -284,6 +288,8 @@ public class Drive extends SubsystemBase {
 
   private double m_dLastFrame = 0; // keep track of the previous frame processed by vision
   public void TargetDriveSpin(double targetAngle, double frame) {
+    Robot r = TheRobot.getInstance();
+
     double steer = targetAngle/45.0;
 
     if (Math.abs(targetAngle) <= m_dTargetSpinDeadZone){
@@ -291,7 +297,7 @@ public class Drive extends SubsystemBase {
       steer = 0;
       SmartDashboard.putNumber("Targeting/Spin Steer", steer);
       m_bPowerPortTargetingAligned = true;
-      m_LEDColor = ledColor.kOnTarget;
+      if (m_lookUpTable.isTargetFound()) m_LEDColor = ledColor.kOnTarget;
       return;
     } else {
       m_bPowerPortTargetingAligned = false;
@@ -348,8 +354,7 @@ public class Drive extends SubsystemBase {
   public void moveAtVelocity(double LeftVelocity, double RightVelocity)
   {
     //TheRobot.log("Auto Velocities" + TheRobot.toString(LeftVelocity));
-    m_leftMotor.set(LeftVelocity);
-    m_rightMotor.set(LeftVelocity); 
+    m_differentialDrive.arcadeDrive(LeftVelocity, 0);
     //m_differentialDrive.tankDrive(LeftVelocity, RightVelocity);
     //JustDrive(LeftVelocity, 0, 0, 0);
   }
@@ -380,7 +385,7 @@ public double getLeftEncoderPosition()
 
 public double getRightEncoderPosition()
 {
-  return m_rightMotor.getSelectedSensorPosition();
+  return -m_rightMotor.getSelectedSensorPosition();
 }
   //check to see if the intake arm is retracted 
   //

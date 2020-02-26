@@ -46,7 +46,7 @@ public class ExtendClimbLift extends CommandBase {
     Robot r = TheRobot.getInstance();
     double dvalueLYAxis = -m_OperatorStick.getRawAxis(1); // joystick Y axis is inverted
     double dvalueRYAxis = -m_OperatorStick.getRawAxis(5); // joystick Y axis is inverted
-    TheRobot.log("LiftPower " + TheRobot.toString(dvalueLYAxis));
+    //TheRobot.log("LiftPower " + TheRobot.toString(dvalueLYAxis));
 
     // enforce deadzone on joysticks
     if (Math.abs(dvalueLYAxis) < m_deadzone) dvalueLYAxis = 0;
@@ -64,7 +64,7 @@ public class ExtendClimbLift extends CommandBase {
 
       //r.m_climber.syncExtend(eRobotSide.RIGHT, dvalueRYAxis);
     }else{
-      TheRobot.log("LiftPower " + TheRobot.toString(dvalueRYAxis));
+      //TheRobot.log("LiftPower " + TheRobot.toString(dvalueRYAxis));
       r.m_climber.extendLift(eRobotSide.RIGHT, dvalueRYAxis);
     }
   }

@@ -73,6 +73,7 @@ public class Climber extends SubsystemBase {
     m_RightWinchMotor.setOpenLoopRampRate(dRampRate);
     m_RightWinchMotor.setInverted(true);
     m_LeftLiftMotor.setOpenLoopRampRate(dRampRate);
+    m_LeftLiftMotor.setInverted(true);
     m_RightLiftMotor.setOpenLoopRampRate(dRampRate);
 
 
@@ -214,10 +215,38 @@ public class Climber extends SubsystemBase {
     //m_LRM_pidController.setReference(m_liftExtensionTarget, ControlType.kPosition); //sets the motor to go to the lift target
     //m_LLM_pidController.setReference(m_liftExtensionTarget, ControlType.kPosition); //sets the motor to go to the lift target
 
+    double e = 0;
     if (w == eRobotSide.LEFT) {
-      m_LeftLiftMotor.set(p);
+      e = m_LLM_Encoder.getPosition();
+      if (p > 0) {
+        if (e < 165.0) {
+          m_LeftLiftMotor.set(p);
+        } else {
+          m_LeftLiftMotor.set(0);
+        }
+      } else {
+        if (e > 0.0) {
+          m_LeftLiftMotor.set(p);
+        } else {
+          m_LeftLiftMotor.set(0);
+        }
+      }
+
     } else {
-      m_RightLiftMotor.set(p);
+      e = m_LRM_Encoder.getPosition();
+      if (p > 0) {
+        if (e < 165.0) {
+          m_RightLiftMotor.set(p);
+        } else {
+          m_RightLiftMotor.set(0);
+        }
+      } else {
+        if (e > 0.0) {
+          m_RightLiftMotor.set(p);
+        } else {
+          m_RightLiftMotor.set(0);
+        }
+      }
     }
 
     return;
@@ -227,13 +256,13 @@ public class Climber extends SubsystemBase {
 
   public void releaseLift(eRobotSide w) {
     // TODO stop at zero
-
+    /*
     if (w == eRobotSide.LEFT) {
       m_LeftLiftMotor.set(-m_LiftSpeed);
     } else {
       m_RightLiftMotor.set(-m_LiftSpeed);
     }
-
+    */
     //m_LRM_pidController.setReference(0, ControlType.kPosition); //sets the motor to go to the orginal position
     //m_LLM_pidController.setReference(0, ControlType.kPosition); //sets the motor to go to the orginal position
 

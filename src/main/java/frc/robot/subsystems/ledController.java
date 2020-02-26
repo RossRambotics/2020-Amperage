@@ -30,7 +30,7 @@ public class LEDController extends SubsystemBase {
 
   @Override
   public void periodic() {
-    m_Color = SmartDashboard.getNumber("LEDController/color", m_Color);
+    //m_Color = SmartDashboard.getNumber("LEDController/color", m_Color);
     m_ledController.set(m_Color);
   }
 
@@ -51,6 +51,7 @@ public class LEDController extends SubsystemBase {
         break;
       case kSlow:
         m_Color = 0.87; // BLUE
+        break;
       case kNormal:
       default:
         m_Color = 0.91; // VIOLET

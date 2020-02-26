@@ -31,6 +31,7 @@ import frc.robot.subsystems.Stick;
 import frc.robot.subsystems.LEDController;
 import frc.robot.subsystems.Hood;
 import frc.robot.auto.AutoTarget;
+import frc.robot.auto.DriveStraight;
 import frc.robot.auto.DriveStriaghtWEncoders;
 import frc.robot.commands.*;
 
@@ -116,39 +117,7 @@ public class Robot extends TimedRobot {
      * Begin autonomous setup of commands 
      * 
      */
-    SendableChooser<CommandBase> autoChooser = new SendableChooser<CommandBase>();
-
-    autoChooser.setDefaultOption("Do Nothing", new CompactIndexer(m_indexer));
-
-    /*
-     * Aim & Shoot!
-     */
-    c = new SequentialCommandGroup(
-      new AutoTarget(m_drive).withTimeout(3.0),
-      new Shoot(m_indexer).withTimeout(5.0)
-    );
-    autoChooser.addOption("Shoot Only",c);
-
-    /*
-     * Aim, Shoot & Drive Forward 1m
-     */
-    c = new SequentialCommandGroup(
-      new AutoTarget(m_drive).withTimeout(3.0),
-      new Shoot(m_indexer).withTimeout(5.0),
-      new DriveStriaghtWEncoders(m_drive, 1.0, 0.25)
-    );
-    autoChooser.addOption("Shoot and Move Forward", c);
-
-    /*
-     * Aim, Shoot & Drive Backward 1m
-     */
-    c = new SequentialCommandGroup(
-      new AutoTarget(m_drive).withTimeout(3.0),
-      new Shoot(m_indexer).withTimeout(5.0),
-      new DriveStriaghtWEncoders(m_drive, -1.0, 0.25)
-    );
-    autoChooser.addOption("Shoot and Move Backward", new CompactIndexer(m_indexer));
-    SmartDashboard.putData("Auto/Selected", autoChooser);  //SendableChooser for autocommand
+    SmartDashboard.getEntry("Auto Mode/Selector").setString("0");  //SendableChooser for autocommand
 
     /* 
      * End autonomous command groups
@@ -202,15 +171,53 @@ public class Robot extends TimedRobot {
   public void autonomousInit() {
     m_timer.reset();
     m_timer.start();
+
     
     double autoMoveDistance = SmartDashboard.getNumber("Auto/Move Distance", 0.0);
     // the distance to move with the appriate auto command
-    CommandBase autoSelected = (CommandBase) SmartDashboard.getData("Auto/Selector");
+    String s = SmartDashboard.getEntry("Auto Mode/Selector").getString("0");// the automode to use
     
+    TheRobot.log("Autonomous Mode: " +s);
+    
+    CommandBase c = null;
+    switch (s) {
 
-    if(autoSelected != null)
-    {
-      autoSelected.schedule();
+      case "0":
+        /*
+        * Aim & Shoot!
+        */
+        c = new SequentialCommandGroup(
+        new AutoTarget(m_drive).withTimeout(3.0),
+        new Shoot(m_indexer).withTimeout(5.0)
+        );
+      break;
+      case "1":
+        /*
+        * Aim, Shoot & Drive Forward 1m
+        */
+        c = new SequentialCommandGroup(
+          new AutoTarget(m_drive).withTimeout(3.0),
+          new Shoot(m_indexer).withTimeout(5.0),
+          new DriveStraight(1.0, 0.5)
+        );
+      break;
+      case "2":
+        /*
+        * Aim, Shoot & Drive Backward 1m
+        */
+        c = new SequentialCommandGroup(
+        new AutoTarget(m_drive).withTimeout(3.0),
+        new Shoot(m_indexer).withTimeout(5.0),
+        new DriveStraight(1.0, -0.5)
+        );
+      break;
+      case "3":
+      default:
+    }
+
+    if (c != null) {
+      c.schedule();
+      m_autonomousCommand = c;
     }
   }
 
