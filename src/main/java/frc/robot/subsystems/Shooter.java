@@ -44,7 +44,6 @@ public class Shooter extends SubsystemBase {
   private double m_dTuningRPM = 4000;
 
   private double m_dLowPortRPM = 500;
-  private double m_dLowPortAngle = 90;
   private boolean m_bToggleLowPort = false;
 
   private boolean m_bReadyToShoot = false;  // is the shooter ready? 

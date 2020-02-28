@@ -31,6 +31,7 @@ public class Shoot extends CommandBase {
     Robot r = TheRobot.getInstance();
     addRequirements(r.m_indexer);
     addRequirements(r.m_shooter);
+    r.m_shooter.setLEDRing(true);
     //r.m_CMDScheduler.schedule(new IntakeCapture(r.m_intake).withTimeout(5.0));
   }
 
@@ -38,6 +39,7 @@ public class Shoot extends CommandBase {
   @Override
   public void execute() {
     Robot r = TheRobot.getInstance();
+    r.m_shooter.setLEDRing(true);
     r.m_shooter.shoot();
     r.m_hood.extend();
   }
@@ -54,6 +56,7 @@ public class Shoot extends CommandBase {
     r.m_shooter.stop();
     r.m_hood.retract();
     r.m_indexer.stop();
+    r.m_shooter.setLEDRing(false);
   }
 
   // Returns true when the command should end.

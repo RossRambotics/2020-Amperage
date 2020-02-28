@@ -37,8 +37,8 @@ public class Drive extends SubsystemBase {
   private boolean m_bPowerCellTargeting = false;
   private boolean m_bPowerPortTargetingAligned = false;
   private double m_dTargetMaxPower = 0.4;
-  private double m_dTargetMinPower = 0.1;
-  private double m_dTargetSpinP = 0.5;
+  private double m_dTargetMinPower = 0.121;
+  private double m_dTargetSpinP = 0.55;
   private double m_dTargetSpinDeadZone = 1.0;
 
   private ShooterLookUp m_lookUpTable = null; // look up table for shooter values
@@ -83,7 +83,7 @@ public class Drive extends SubsystemBase {
   }
 
   private double m_deadzone = 0.05;
-  private double m_dSlowMaxPower = 0.5;
+  private double m_dSlowMaxPower = 0.35;
   private double m_dFastMaxPower = 0.75;
   private double m_dCurrentMaxPower = 0.75;
   private int m_iLEDIndexFullCounter = 0;
@@ -148,19 +148,11 @@ public class Drive extends SubsystemBase {
     if (Math.abs(dvalueRXAxis) < m_deadzone) dvalueRXAxis = 0;
     if (Math.abs(dvalueRYAxis) < m_deadzone) dvalueRYAxis = 0;
 
-    // enforce maximums on joysticks
-    if (Math.abs(dvalueLYAxis) > m_dCurrentMaxPower) {
-      if (dvalueLYAxis > 0) dvalueLYAxis = m_dCurrentMaxPower; else dvalueLYAxis = -m_dCurrentMaxPower;
-    }
-    if (Math.abs(dvalueLXAxis) > m_dCurrentMaxPower) {
-      if (dvalueLXAxis > 0) dvalueLXAxis = m_dCurrentMaxPower; else dvalueLXAxis = -m_dCurrentMaxPower;
-    }
-    if (Math.abs(dvalueRYAxis) > m_dCurrentMaxPower) {
-      if (dvalueRYAxis > 0) dvalueRYAxis = m_dCurrentMaxPower; else dvalueRYAxis = -m_dCurrentMaxPower;
-    }
-    if (Math.abs(dvalueRXAxis) > m_dCurrentMaxPower) {
-      if (dvalueRXAxis > 0) dvalueRXAxis = m_dCurrentMaxPower; else dvalueRXAxis = -m_dCurrentMaxPower;
-    }
+    // enforce maximums on joysticks as a scale
+      dvalueLYAxis = dvalueLYAxis * m_dCurrentMaxPower;
+      dvalueLXAxis = dvalueLXAxis * m_dCurrentMaxPower;
+      dvalueRYAxis = dvalueRYAxis * m_dCurrentMaxPower;
+      dvalueRXAxis = dvalueRXAxis * m_dCurrentMaxPower;
 
     // drive the robot in manual mode
     if (!(m_bPowerPortTargeting || m_bPowerCellTargeting)) {
@@ -233,7 +225,7 @@ public class Drive extends SubsystemBase {
         steer = targetAngle/45.0;
         if (steer > 1.0) steer = 1.0;
         if (steer < -1.0) steer = -1.0;
-        m_differentialDrive.arcadeDrive(dvalueLYAxis, steer);
+        m_differentialDrive.arcadeDrive(dvalueLYAxis, steer, true);
         break;
     }
   }

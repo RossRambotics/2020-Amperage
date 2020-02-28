@@ -55,10 +55,10 @@ public class RobotContainer {
     c = new SequentialCommandGroup(
         new ClearIndexer(r.m_indexer).withTimeout(0.05),
         new ReadyShooter(r.m_indexer).withTimeout(0.2),
-        new frc.robot.commands.Shoot(r.m_indexer).withTimeout(5.0));
+        new frc.robot.commands.Shoot(r.m_indexer).withTimeout(7.0));
     //c = new frc.robot.commands.Shoot(r.m_indexer).withTimeout(10.0);
 
-    rightTrigger.whenHeld(c);
+    rightTrigger.whenPressed(c);
 
     // a button - capture
     JoystickButton aButton = new JoystickButton(m_DriverStick, 1); // the button associated while caputuring balls

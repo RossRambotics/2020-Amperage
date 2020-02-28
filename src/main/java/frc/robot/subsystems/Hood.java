@@ -38,7 +38,7 @@ public class Hood extends SubsystemBase {
   private double m_pid_kP, m_pid_kI, m_pid_kD, m_pid_kIz, m_pid_kFF;
   private double m_pid_kMaxOutput, m_pid_kMinOutput, m_pid_maxRPM;
   private double m_dTargetAngle = 0;
-  private double m_dLowTargetMode = 90.0; // degress for hood for low power port
+  private double m_dLowTargetMode = 75.0; // degress for hood for low power port
 
   // 55/18 --- ratio of the 2 sprockets
   // * 4   --- 4:1 gear box

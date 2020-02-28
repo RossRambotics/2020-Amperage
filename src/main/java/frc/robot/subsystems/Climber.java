@@ -60,6 +60,7 @@ public class Climber extends SubsystemBase {
   private double m_LiftSpeed = 1.0;
   private Joystick m_OperatorStick;
   private double m_deadzone = 0.05;
+  private boolean m_bBrakeModeEnabled = true;
 
 
   public Climber() {
@@ -89,13 +90,16 @@ public class Climber extends SubsystemBase {
 
     SmartDashboard.putNumber("Climber/Left Motor Rotations", m_LLM_Encoder.getPosition());
     SmartDashboard.putNumber("Climber/Right Motor Rotations", m_LRM_Encoder.getPosition());
+    SmartDashboard.putBoolean("Climber/Brake Mode", m_bBrakeModeEnabled);
+
 
     m_OperatorStick =  new Joystick(1); // Operator joystick
 
     m_LeftLiftMotor.setIdleMode(IdleMode.kBrake);
     m_RightLiftMotor.setIdleMode(IdleMode.kBrake);
-    m_LeftWinchMotor.setIdleMode(IdleMode.kCoast);
-    m_RightWinchMotor.setIdleMode(IdleMode.kCoast);
+    m_LeftWinchMotor.setIdleMode(IdleMode.kBrake);
+    m_RightWinchMotor.setIdleMode(IdleMode.kBrake);
+    m_bBrakeModeEnabled = true;
 /*
     m_LLM_pidController = m_LeftLiftMotor.getPIDController();
     m_LRM_pidController = m_RightLiftMotor.getPIDController();
@@ -163,6 +167,22 @@ public class Climber extends SubsystemBase {
 
     SmartDashboard.putNumber("Climber/Left Motor Rotations", m_LLM_Encoder.getPosition());
     SmartDashboard.putNumber("Climber/Right Motor Rotations", m_LRM_Encoder.getPosition());
+
+    boolean b = SmartDashboard.getBoolean("Climber/Brake Mode", true);
+    if (b != m_bBrakeModeEnabled) {
+      m_bBrakeModeEnabled = b;
+      if (m_bBrakeModeEnabled) {
+        m_LeftLiftMotor.setIdleMode(IdleMode.kBrake);
+        m_RightLiftMotor.setIdleMode(IdleMode.kBrake);
+        m_LeftWinchMotor.setIdleMode(IdleMode.kBrake);
+        m_RightWinchMotor.setIdleMode(IdleMode.kBrake);
+      } else {
+        m_LeftLiftMotor.setIdleMode(IdleMode.kCoast);
+        m_RightLiftMotor.setIdleMode(IdleMode.kCoast);
+        m_LeftWinchMotor.setIdleMode(IdleMode.kCoast);
+        m_RightWinchMotor.setIdleMode(IdleMode.kCoast);
+      }
+    }
 
     // This method will be called once per scheduler run
     // read PID coefficients from SmartDashboard
