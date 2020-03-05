@@ -10,6 +10,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.helper.JoystickAnalogButton;
@@ -28,10 +29,8 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   //private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
 
-  private final Command m_autoCommand = null;
   private Joystick m_DriverStick = new Joystick(0);
   private Joystick m_OperatorStick = new Joystick(1); // operators joystick
-
 
   /**
    * The container for the robot.  Contains subsystems, OI devices, and commands.
@@ -57,10 +56,10 @@ public class RobotContainer {
     c = new SequentialCommandGroup(
         new ClearIndexer(r.m_indexer).withTimeout(0.05),
         new ReadyShooter(r.m_indexer).withTimeout(0.2),
-        new frc.robot.commands.Shoot(r.m_indexer).withTimeout(5.0));
+        new frc.robot.commands.Shoot(r.m_indexer).withTimeout(7.0));
     //c = new frc.robot.commands.Shoot(r.m_indexer).withTimeout(10.0);
 
-    rightTrigger.whenHeld(c);
+    rightTrigger.whenPressed(c);
 
     // a button - capture
     JoystickButton aButton = new JoystickButton(m_DriverStick, 1); // the button associated while caputuring balls
@@ -75,7 +74,7 @@ public class RobotContainer {
     xButton.toggleWhenPressed(new frc.robot.commands.ExtendIntake(r.m_indexer), true);
 
     // left trigger - activate targeting
-    JoystickButton leftTrigger = new JoystickAnalogButton(m_DriverStick, 2); // the trigger associated with targeting
+    JoystickButton leftTrigger = new JoystickAnalogButton(m_DriverStick, 2, 0.05); // the trigger associated with targeting
     leftTrigger.whenHeld(new frc.robot.commands.Target());
 
     // start button - activate top indexer
@@ -95,51 +94,62 @@ public class RobotContainer {
     );
     rightShoulderButton.whenPressed(c);
 
-    // configure operator buttons
+    // Click left stick to toggle gears
+    JoystickButton leftStickClick = new JoystickButton(m_DriverStick, 9);
+    leftStickClick.whenPressed(new ToggleSlowDrive());
+    
+    //click Y to target low Power Port
+    JoystickButton yButton = new JoystickButton(m_DriverStick, 4);
+    yButton.whenPressed(new ToggleLowPowerPort());
+
+    /** 
+     * configure operator joystick buttons
+     */
+     
+    // start button - activate top indexer
+    JoystickButton startButtonOperator = new JoystickButton(m_OperatorStick, 8); // the button runs the indexer
+    startButtonOperator.whileHeld(new frc.robot.commands.RunIndexer(r.m_indexer));
+    
+    // back button - clear indexer
+    JoystickButton backButtonOperator = new JoystickButton(m_OperatorStick, 7); // the buttom runs the indexer
+    backButtonOperator.whileHeld(new frc.robot.commands.ClearIndexer(r.m_indexer));
+
     // Winch up / Retract right side
     JoystickButton operatorRightTrigger = new JoystickAnalogButton(m_OperatorStick, 3);
     operatorRightTrigger.whileHeld(new frc.robot.commands.RetractClimbWinch(eRobotSide.RIGHT));
-
-    // Winch down / Release right side
-    JoystickButton operatorRightShoulder = new JoystickButton(m_OperatorStick, 6);;
-    operatorRightShoulder.whileHeld(new frc.robot.commands.RetractClimbWinch(eRobotSide.RIGHT));    
     
     // Winch up / Retract left side
     JoystickButton operatorLeftTrigger = new JoystickAnalogButton(m_OperatorStick, 2);
-    operatorLeftTrigger.whileHeld(new frc.robot.commands.ReleaseClimbWinch(eRobotSide.LEFT));
-
-    // Winch down / Release left side
-    JoystickButton operatorLeftShoulder = new JoystickButton(m_OperatorStick, 5);;
-    operatorLeftShoulder.whileHeld(new frc.robot.commands.ReleaseClimbWinch(eRobotSide.RIGHT));
+    operatorLeftTrigger.whileHeld(new frc.robot.commands.RetractClimbWinch(eRobotSide.LEFT));
     
-    // Lift section
-    // Lift up / Retract right side
-   /* JoystickButton operatorRightUp = new JoystickAnalogButton(m_OperatorStick, 0, 0.5);
-    operatorRightUp.whileHeld(new frc.robot.commands.RetractClimbWinch(eRobotSide.RIGHT));
+    // Operator can cancel the shoot / clear the shooter
+    JoystickButton opRightShoulderButton = new JoystickButton(m_OperatorStick, 6);
+    c = new SequentialCommandGroup(
+        new ClearIndexer(r.m_indexer).withTimeout(0.05),
+        new ReadyShooter(r.m_indexer).withTimeout(0.1)
+    );
+    opRightShoulderButton.whenPressed(c);
 
-    // Winch down / Release right side
-    JoystickButton operatorRightDown = new JoystickAnalogButton(m_OperatorStick, 0, -0.5);;
-    operatorRightDown.whileHeld(new frc.robot.commands.RetractClimbWinch(eRobotSide.RIGHT));    
-    
-    // Winch up / Retract left side
-    JoystickButton operatorLeftUp = new JoystickAnalogButton(m_OperatorStick, 4, 0.5);
-    operatorLeftUp.whileHeld(new frc.robot.commands.ReleaseClimbWinch(eRobotSide.LEFT));
+    /** 
+     * Configure operator nudge commands to help with hanging
+     */
+    double dNudge = 0.2;  // Nudge amount
 
-    // Winch down / Release left side
-    JoystickButton operatorLeftDown = new JoystickAnalogButton(m_OperatorStick, 4, -0.5);;
-    operatorLeftDown.whileHeld(new frc.robot.commands.ReleaseClimbWinch(eRobotSide.RIGHT));
-    */
-  }
+    // Nudge forward
+    POVButton operatorNudgeForward = new POVButton(m_OperatorStick, 0);
+    operatorNudgeForward.whenPressed(new DriveNudge(r.m_drive, 0.2, 0.2).withTimeout(dNudge));
 
+    // Nudge backward
+    POVButton operatorNudgeBackward = new POVButton(m_OperatorStick, 180);
+    operatorNudgeBackward.whenPressed(new DriveNudge(r.m_drive, -0.2, -0.2).withTimeout(dNudge));
 
-  /**
-   * Use this to pass the autonomous command to the main {@link Robot} class.
-   *
-   * @return the command to run in autonomous
-   */
-  public Command getAutonomousCommand() {
-    // An ExampleCommand will run in autonomous
-    return m_autoCommand;
+    // Nudge right back
+    POVButton operatorNudgeRightBack = new POVButton(m_OperatorStick, 90);
+    operatorNudgeRightBack.whenPressed(new DriveNudge(r.m_drive, 0, -0.2).withTimeout(dNudge));
+
+    // Nudge left back
+    POVButton operatorNudgeLeftBack = new POVButton(m_OperatorStick, 270);
+    operatorNudgeLeftBack.whenPressed(new DriveNudge(r.m_drive, -0.2, 0).withTimeout(dNudge));
   }
 
   public Joystick getDriverStick() {

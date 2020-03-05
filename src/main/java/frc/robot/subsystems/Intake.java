@@ -36,7 +36,7 @@ public class Intake extends SubsystemBase {
   private Double pid_kMAX;
   private Double pid_kMIN;
 
-  private Double captureSpeed = 0.25; // the capture speed for the intake in RPM
+  private Double captureSpeed = 0.5; // the capture speed for the intake in RPM
   private boolean m_bExtended = false;
 
   public Intake() {

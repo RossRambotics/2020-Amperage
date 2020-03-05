@@ -30,12 +30,21 @@ public class ShooterLookUp // changes distance to speed and hood angle
 
     private void fillTableVaules() // adds the key value pairs to the lookup table <KEY, HoodAngle, ShooterRPM>
     {
-        addTableValue(2.0, 15.0, 4000.0);
+       /* addTableValue(2.0, 15.0, 4000.0);
         addTableValue(3.0, 25.0, 4350.0);
         addTableValue(3.5, 28.0, 4425.0);
         addTableValue(4.0, 29.0, 4500.0);
         addTableValue(5.0, 31.0, 5000.0);
-        addTableValue(6.0, 33.0, 5100.0);
+        addTableValue(6.0, 33.0, 5100.0);*/
+        addTableValue(2.5, 22.0, 4200.0);
+        addTableValue(3.6, 30.0, 4200.0);
+        addTableValue(5.5, 35.0, 5000.0);
+        addTableValue(7.0, 36.0, 5200.0);
+        addTableValue(4.2, 33.0, 4400.0);
+        addTableValue(4.7, 33.7, 4500.0);
+        addTableValue(5.85, 32.5, 4500.0);
+
+
     }
 
     public boolean isTargetFound() {
@@ -139,23 +148,23 @@ public class ShooterLookUp // changes distance to speed and hood angle
         return closestKey;
     }
 
-    private ShooterValueSet interpolate(ShooterValueKey Key1, ShooterValueKey Key2) // creates a new set of values by taking wieghted average
+    private ShooterValueSet interpolate(ShooterValueKey Key1, ShooterValueKey Key2) // creates a new set of values by taking weighted average
     {
-        Double wieght1 = Key1.devationFromDistance / (Key1.devationFromDistance + Key2.devationFromDistance);
-        Double wieght2 = 1 - wieght1; // creates the weights for taking a wieghed average
+        Double weight1 = Key2.devationFromDistance / (Key1.devationFromDistance + Key2.devationFromDistance);
+        Double weight2 = 1 - weight1; // creates the weights for taking a wieghed average
 
         ShooterValueSet valueSet1 = valueTable.get(Key1.key);
         ShooterValueSet valueSet2 = valueTable.get(Key2.key);
 
-        double hoodAngle = takeWieghtedAverage(valueSet1.hoodAngle, valueSet2.hoodAngle, wieght1, wieght2);
-        double shooterRPM = takeWieghtedAverage(valueSet1.shooterRPM, valueSet2.shooterRPM, wieght1, wieght2);
+        double hoodAngle = takeweightedAverage(valueSet1.hoodAngle, valueSet2.hoodAngle, weight1, weight2);
+        double shooterRPM = takeweightedAverage(valueSet1.shooterRPM, valueSet2.shooterRPM, weight1, weight2);
 
         return new ShooterValueSet(hoodAngle, shooterRPM);
     }
 
-    private Double takeWieghtedAverage(Double Value1, Double Value2, Double Wieght1, Double Wieght2) // takes the wieghted average of two values
+    private Double takeweightedAverage(Double Value1, Double Value2, Double weight1, Double weight2) // takes the weighted average of two values
     {
-        return (((Value1 * Wieght1) + (Value2 * Wieght2)) / (Wieght1 + Wieght2));
+        return (((Value1 * weight1) + (Value2 * weight2)) / (weight1 + weight2));
     }
 
 	public double getFrameCounter() {

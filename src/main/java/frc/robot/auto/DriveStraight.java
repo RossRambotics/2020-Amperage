@@ -5,63 +5,60 @@
 /* the project.                                                               */
 /*----------------------------------------------------------------------------*/
 
-package frc.robot.commands;
+package frc.robot.auto;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.Robot;
 import frc.robot.TheRobot;
 
-public class Shoot extends CommandBase {
-
-  private boolean m_finished = false;
+public class DriveStraight extends CommandBase {
+  double m_dist = 0;
+  double dStart = 0;
+  private double m_dVelocity;
   /**
-   * Creates a new Shoot.
+   * Creates a new DriveStraight.
    */
-  public Shoot(Subsystem indexer) {
+  public DriveStraight(double dist, double velocity) {
     // Use addRequirements() here to declare subsystem dependencies.
-    this.addRequirements(indexer);
-
-}
+    m_dist = dist * 45000.0;
+    m_dVelocity = velocity;
+    TheRobot.log("Initailizing Drive Straight");
+  }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    TheRobot.log("Shoot Initializing...");
     Robot r = TheRobot.getInstance();
-    addRequirements(r.m_indexer);
-    addRequirements(r.m_shooter);
-    r.m_shooter.setLEDRing(true);
-    //r.m_CMDScheduler.schedule(new IntakeCapture(r.m_intake).withTimeout(5.0));
+    dStart = r.m_drive.getLeftEncoderPosition();
+    r.m_drive.SetPowerPortTargeting(true);
+
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
     Robot r = TheRobot.getInstance();
-    r.m_shooter.setLEDRing(true);
-    r.m_shooter.shoot();
-    r.m_hood.extend();
+    r.m_drive.moveAtVelocity(m_dVelocity, m_dVelocity);
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    if (interrupted) {
-      TheRobot.log("Shoot interrupted...");
-    } else {
-      TheRobot.log("Shoot ended...");
-    }
     Robot r = TheRobot.getInstance();
-    r.m_shooter.stop();
-    r.m_hood.retract();
-    r.m_indexer.stop();
-    r.m_shooter.setLEDRing(false);
+    r.m_drive.SetPowerPortTargeting(false);
+
   }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return m_finished;
+    Robot r = TheRobot.getInstance();
+    if (Math.abs(r.m_drive.getLeftEncoderPosition() - dStart) < m_dist){
+    TheRobot.log(TheRobot.toString(Math.abs(r.m_drive.getLeftEncoderPosition() - dStart) - m_dist));
+
+      return false;
+    }
+    else 
+      return true;
   }
 }

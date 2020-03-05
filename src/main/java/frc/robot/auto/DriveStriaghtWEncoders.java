@@ -73,7 +73,7 @@ public class DriveStriaghtWEncoders extends CommandBase {
         //left = [0]
         //right = [1]
         
-        m_drive.moveAtVelocity(velocities[0], velocities[1]);
+        m_drive.moveAtVelocity(velocities[0], -velocities[1]);
         
       return;
     }

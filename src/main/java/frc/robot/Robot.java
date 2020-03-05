@@ -7,9 +7,11 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.Sendable;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
@@ -26,9 +28,10 @@ import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.PowerCellTargeter;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Stick;
-import frc.robot.subsystems.ledController;
+import frc.robot.subsystems.LEDController;
 import frc.robot.subsystems.Hood;
 import frc.robot.auto.AutoTarget;
+import frc.robot.auto.DriveStraight;
 import frc.robot.auto.DriveStriaghtWEncoders;
 import frc.robot.commands.*;
 
@@ -54,7 +57,7 @@ public class Robot extends TimedRobot {
   public Intake m_intake = null;
   public Shooter m_shooter = null;
   public Hood m_hood = null;
-  public ledController m_LEDs = null;
+  public LEDController m_LEDs = null;
   public PowerCellTargeter m_PCTargeter = null;
   public CommandScheduler m_CMDScheduler = null;
 
@@ -85,7 +88,7 @@ public class Robot extends TimedRobot {
     m_shooter = new Shooter();
     m_hood = new Hood();
     m_PCTargeter = new PowerCellTargeter();
-    m_LEDs = new ledController();
+    m_LEDs = new LEDController();
 
 
     // Setup the singleton for easy access to the robot and subsystems
@@ -106,6 +109,20 @@ public class Robot extends TimedRobot {
     SmartDashboard.putData("Commands/Indexer/IndexNewPC!", new IndexNewPowerCell());
     SmartDashboard.putData("Commands/Indexer/CompactIndexer!", new CompactIndexer(m_indexer));
     SmartDashboard.putData("Commands/Indexer/CompactShooter!", new CompactShooter().withTimeout(0.2));
+
+    SmartDashboard.putNumber("Auto/Move Distance", 0.0);
+
+    /* 
+     *
+     * Begin autonomous setup of commands 
+     * 
+     */
+    SmartDashboard.getEntry("Auto Mode/Selector").setString("0");  //SendableChooser for autocommand
+
+    /* 
+     * End autonomous command groups
+     * 
+     */
 
     c = new SequentialCommandGroup(
       new AutoTarget(m_drive).withTimeout(3.0),
@@ -154,8 +171,54 @@ public class Robot extends TimedRobot {
   public void autonomousInit() {
     m_timer.reset();
     m_timer.start();
-    
 
+    
+    double autoMoveDistance = SmartDashboard.getNumber("Auto/Move Distance", 0.0);
+    // the distance to move with the appriate auto command
+    String s = SmartDashboard.getEntry("Auto Mode/Selector").getString("0");// the automode to use
+    
+    TheRobot.log("Autonomous Mode: " +s);
+    
+    CommandBase c = null;
+    switch (s) {
+
+      case "0":
+        /*
+        * Aim & Shoot!
+        */
+        c = new SequentialCommandGroup(
+        new AutoTarget(m_drive).withTimeout(3.0),
+        new Shoot(m_indexer).withTimeout(5.0)
+        );
+      break;
+      case "1":
+        /*
+        * Aim, Shoot & Drive Forward 1m
+        */
+        c = new SequentialCommandGroup(
+          new AutoTarget(m_drive).withTimeout(3.0),
+          new Shoot(m_indexer).withTimeout(5.0),
+          new DriveStraight(1.0, 0.5)
+        );
+      break;
+      case "2":
+        /*
+        * Aim, Shoot & Drive Backward 1m
+        */
+        c = new SequentialCommandGroup(
+        new AutoTarget(m_drive).withTimeout(3.0),
+        new Shoot(m_indexer).withTimeout(5.0),
+        new DriveStraight(1.0, -0.5)
+        );
+      break;
+      case "3":
+      default:
+    }
+
+    if (c != null) {
+      c.schedule();
+      m_autonomousCommand = c;
+    }
   }
 
   /**
@@ -163,12 +226,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousPeriodic() {
-    // Drive for 2 seconds
-    //if (m_timer.get() < 2.0) {
-    //  m_robotDrive.arcadeDrive(0.5, 0.0); // drive forwards half speed
-    //}//// else {
-    //  m_robotDrive.stopMotor(); // stop robot
-    //}
+ 
   }
 
   /**
@@ -176,6 +234,11 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopInit() {
+    
+    if(m_autonomousCommand != null)
+    {
+      m_autonomousCommand.cancel();
+    }
   }
 
   /**

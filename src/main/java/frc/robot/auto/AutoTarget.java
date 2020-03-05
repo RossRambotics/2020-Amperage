@@ -32,6 +32,11 @@ public class AutoTarget extends CommandBase {
   @Override
   public void initialize() {
     m_drive.enableBrakes(false);
+
+    Robot r = TheRobot.getInstance();
+    r.m_shooter.setLEDRing(true);
+    r.m_intake.extend();
+    r.m_drive.SetPowerPortTargeting(true);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -56,6 +61,10 @@ public class AutoTarget extends CommandBase {
   @Override
   public void end(boolean interrupted) {
     m_drive.enableBrakes(true);
+
+    Robot r = TheRobot.getInstance();
+    r.m_shooter.setLEDRing(false);
+    r.m_drive.SetPowerPortTargeting(false);
   }
 
   // Returns true when the command should end.

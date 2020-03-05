@@ -12,7 +12,7 @@ public class RetractClimbWinch extends CommandBase {
 
     public RetractClimbWinch(eRobotSide w) { // when instance of command is created
         Robot r = TheRobot.getInstance(); 
-        this.addRequirements(r.m_climber);
+        //this.addRequirements(r.m_climber);
 
         m_winch = w;
     }
