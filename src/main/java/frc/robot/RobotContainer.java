@@ -10,6 +10,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.helper.JoystickAnalogButton;
@@ -101,7 +102,10 @@ public class RobotContainer {
     JoystickButton yButton = new JoystickButton(m_DriverStick, 4);
     yButton.whenPressed(new ToggleLowPowerPort());
 
-    // configure operator buttons
+    /** 
+     * configure operator joystick buttons
+     */
+     
     // start button - activate top indexer
     JoystickButton startButtonOperator = new JoystickButton(m_OperatorStick, 8); // the button runs the indexer
     startButtonOperator.whileHeld(new frc.robot.commands.RunIndexer(r.m_indexer));
@@ -113,36 +117,39 @@ public class RobotContainer {
     // Winch up / Retract right side
     JoystickButton operatorRightTrigger = new JoystickAnalogButton(m_OperatorStick, 3);
     operatorRightTrigger.whileHeld(new frc.robot.commands.RetractClimbWinch(eRobotSide.RIGHT));
-
-    // Winch down / Release right side
-    //JoystickButton operatorRightShoulder = new JoystickButton(m_OperatorStick, 6);;
-    //operatorRightShoulder.whileHeld(new frc.robot.commands.RetractClimbWinch(eRobotSide.RIGHT));    
     
     // Winch up / Retract left side
     JoystickButton operatorLeftTrigger = new JoystickAnalogButton(m_OperatorStick, 2);
     operatorLeftTrigger.whileHeld(new frc.robot.commands.RetractClimbWinch(eRobotSide.LEFT));
-
-    // Winch down / Release left side
-    //JoystickButton operatorLeftShoulder = new JoystickButton(m_OperatorStick, 5);;
-    //operatorLeftShoulder.whileHeld(new frc.robot.commands.ReleaseClimbWinch(eRobotSide.RIGHT));
     
-    // Lift section
-    // Lift up / Retract right side
-   /* JoystickButton operatorRightUp = new JoystickAnalogButton(m_OperatorStick, 0, 0.5);
-    operatorRightUp.whileHeld(new frc.robot.commands.RetractClimbWinch(eRobotSide.RIGHT));
+    // Operator can cancel the shoot / clear the shooter
+    JoystickButton opRightShoulderButton = new JoystickButton(m_OperatorStick, 6);
+    c = new SequentialCommandGroup(
+        new ClearIndexer(r.m_indexer).withTimeout(0.05),
+        new ReadyShooter(r.m_indexer).withTimeout(0.1)
+    );
+    opRightShoulderButton.whenPressed(c);
 
-    // Winch down / Release right side
-    JoystickButton operatorRightDown = new JoystickAnalogButton(m_OperatorStick, 0, -0.5);;
-    operatorRightDown.whileHeld(new frc.robot.commands.RetractClimbWinch(eRobotSide.RIGHT));    
-    
-    // Winch up / Retract left side
-    JoystickButton operatorLeftUp = new JoystickAnalogButton(m_OperatorStick, 4, 0.5);
-    operatorLeftUp.whileHeld(new frc.robot.commands.ReleaseClimbWinch(eRobotSide.LEFT));
+    /** 
+     * Configure operator nudge commands to help with hanging
+     */
+    double dNudge = 0.2;  // Nudge amount
 
-    // Winch down / Release left side
-    JoystickButton operatorLeftDown = new JoystickAnalogButton(m_OperatorStick, 4, -0.5);;
-    operatorLeftDown.whileHeld(new frc.robot.commands.ReleaseClimbWinch(eRobotSide.RIGHT));
-    */
+    // Nudge forward
+    POVButton operatorNudgeForward = new POVButton(m_OperatorStick, 0);
+    operatorNudgeForward.whenPressed(new DriveNudge(r.m_drive, 0.2, 0.2).withTimeout(dNudge));
+
+    // Nudge backward
+    POVButton operatorNudgeBackward = new POVButton(m_OperatorStick, 180);
+    operatorNudgeBackward.whenPressed(new DriveNudge(r.m_drive, -0.2, -0.2).withTimeout(dNudge));
+
+    // Nudge right back
+    POVButton operatorNudgeRightBack = new POVButton(m_OperatorStick, 90);
+    operatorNudgeRightBack.whenPressed(new DriveNudge(r.m_drive, 0, -0.2).withTimeout(dNudge));
+
+    // Nudge left back
+    POVButton operatorNudgeLeftBack = new POVButton(m_OperatorStick, 270);
+    operatorNudgeLeftBack.whenPressed(new DriveNudge(r.m_drive, -0.2, 0).withTimeout(dNudge));
   }
 
   public Joystick getDriverStick() {

@@ -187,7 +187,6 @@ public class Robot extends TimedRobot {
         * Aim & Shoot!
         */
         c = new SequentialCommandGroup(
-        new ExtendIntake(m_indexer),
         new AutoTarget(m_drive).withTimeout(3.0),
         new Shoot(m_indexer).withTimeout(5.0)
         );
@@ -197,7 +196,6 @@ public class Robot extends TimedRobot {
         * Aim, Shoot & Drive Forward 1m
         */
         c = new SequentialCommandGroup(
-          new ExtendIntake(m_indexer),
           new AutoTarget(m_drive).withTimeout(3.0),
           new Shoot(m_indexer).withTimeout(5.0),
           new DriveStraight(1.0, 0.5)
@@ -208,7 +206,6 @@ public class Robot extends TimedRobot {
         * Aim, Shoot & Drive Backward 1m
         */
         c = new SequentialCommandGroup(
-        new ExtendIntake(m_indexer),
         new AutoTarget(m_drive).withTimeout(3.0),
         new Shoot(m_indexer).withTimeout(5.0),
         new DriveStraight(1.0, -0.5)
@@ -229,12 +226,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousPeriodic() {
-    // Drive for 2 seconds
-    //if (m_timer.get() < 2.0) {
-    //  m_robotDrive.arcadeDrive(0.5, 0.0); // drive forwards half speed
-    //}//// else {
-    //  m_robotDrive.stopMotor(); // stop robot
-    //}
+ 
   }
 
   /**

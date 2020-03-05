@@ -39,7 +39,10 @@ public class ShooterLookUp // changes distance to speed and hood angle
         addTableValue(2.5, 22.0, 4200.0);
         addTableValue(3.6, 30.0, 4200.0);
         addTableValue(5.5, 35.0, 5000.0);
-        addTableValue(7.0, 37.0, 5200.0);
+        addTableValue(7.0, 36.0, 5200.0);
+        addTableValue(4.2, 33.0, 4400.0);
+        addTableValue(4.7, 33.7, 4500.0);
+        addTableValue(5.85, 32.5, 4500.0);
 
 
     }

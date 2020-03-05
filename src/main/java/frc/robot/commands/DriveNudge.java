@@ -5,66 +5,42 @@
 /* the project.                                                               */
 /*----------------------------------------------------------------------------*/
 
-package frc.robot.auto;
+package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.helper.*;
 import frc.robot.subsystems.Drive;
-import frc.robot.*;
 
-/**
- * Automatically find the target and end on target.
- */
-
-public class AutoTarget extends CommandBase {
+public class DriveNudge extends CommandBase {
   private Drive m_drive = null;
-  private ShooterLookUp m_lookUpTable = new ShooterLookUp();
+  double m_left, m_right;
   /**
-   * Creates a new AutoTarget.
+   * Creates a new DriveNudge.
    */
-  public AutoTarget(Drive drive) {
+  public DriveNudge(Drive drive, double left, double right) {
     // Use addRequirements() here to declare subsystem dependencies.
-
     m_drive = drive;
+    m_left = left;
+    m_right = right;
+    this.addRequirements(m_drive);
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    m_drive.enableBrakes(false);
+    m_drive.SetPowerPortTargeting(true);
 
-    Robot r = TheRobot.getInstance();
-    r.m_shooter.setLEDRing(true);
-    r.m_intake.extend();
-    r.m_drive.SetPowerPortTargeting(true);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    double targetAngle = m_lookUpTable.getTargetAngle();
-    double dFrame = m_lookUpTable.getFrameCounter();
-
-    if (true) {
-    TheRobot.log("Frame: " + TheRobot.toString(dFrame) +
-                 " TargetAngle: " + TheRobot.toString(targetAngle));
-    }
-
-    m_drive.TargetDriveSpin(targetAngle, dFrame);
-
-    return;
+    m_drive.NudgeDrive(m_left, m_right);
   }
-
-
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    m_drive.enableBrakes(true);
-
-    Robot r = TheRobot.getInstance();
-    r.m_shooter.setLEDRing(false);
-    r.m_drive.SetPowerPortTargeting(false);
+    m_drive.SetPowerPortTargeting(false);
   }
 
   // Returns true when the command should end.

@@ -30,6 +30,7 @@ public class DriveStraight extends CommandBase {
   public void initialize() {
     Robot r = TheRobot.getInstance();
     dStart = r.m_drive.getLeftEncoderPosition();
+    r.m_drive.SetPowerPortTargeting(true);
 
   }
 
@@ -43,6 +44,8 @@ public class DriveStraight extends CommandBase {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
+    Robot r = TheRobot.getInstance();
+    r.m_drive.SetPowerPortTargeting(false);
 
   }
 

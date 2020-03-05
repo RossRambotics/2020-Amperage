@@ -404,4 +404,8 @@ public double getRightEncoderPosition()
     m_encoderBottom.setPosition(0);
   }
   */
+
+  public void NudgeDrive(double left, double right) {
+    m_differentialDrive.tankDrive(left, right);
+  }
 }
