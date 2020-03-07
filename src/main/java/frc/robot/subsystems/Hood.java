@@ -33,7 +33,8 @@ public class Hood extends SubsystemBase {
   private boolean m_extended = false;
 
   private double m_position_hood = 0;
-  private double m_position_target = 5000;
+  private double m_position_target = 0;  
+  private double m_last_position_target = 0;
 
   private double m_pid_kP, m_pid_kI, m_pid_kD, m_pid_kIz, m_pid_kFF;
   private double m_pid_kMaxOutput, m_pid_kMinOutput, m_pid_maxRPM;
@@ -150,7 +151,12 @@ public class Hood extends SubsystemBase {
     
     //m_motorHood.set(0.25);
     //TheRobot.log("Hood target: " + TheRobot.toString(m_position_target));
-    m_pidController.setReference(m_position_target, ControlType.kPosition);
+    if(m_lookUpTable.isTargetFound())
+    {
+      m_last_position_target = m_position_target;
+    }
+
+    m_pidController.setReference(m_last_position_target, ControlType.kPosition);
     //m_pidController.setReference(2, ControlType.kPosition);
 
     // Get the position of the hood

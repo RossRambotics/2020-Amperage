@@ -47,8 +47,8 @@ public class Drive extends SubsystemBase {
   private final static int kDriveStyle_arcade1 = 1;
   private final static int kDriveStyle_arcade2 = 2;
   private final static int kDriveStyle_arcade3 = 3;
-  private int m_DriveStyle = Drive.kDriveStyle_arcade3;
-  private DifferentialDrive m_differentialDrive = new DifferentialDrive(m_leftMotor, m_rightMotor);
+  public int m_DriveStyle = Drive.kDriveStyle_arcade3;
+  private DifferentialDrive m_differentialDrive = null;
   private double m_dOpenLoopRamp = 0.6;
   private boolean m_bUseJoystick = true;
   private boolean m_bSlowDrive = false;
@@ -64,6 +64,7 @@ public class Drive extends SubsystemBase {
     m_rightMotor.setNeutralMode(NeutralMode.Brake);
     m_leftMotor.configOpenloopRamp(m_dOpenLoopRamp);
     m_rightMotor.configOpenloopRamp(m_dOpenLoopRamp);
+    m_differentialDrive = new DifferentialDrive(m_leftMotor, m_rightMotor);
 
     m_driverStick =  new Joystick(0); // drivers joystick
 
@@ -161,9 +162,9 @@ public class Drive extends SubsystemBase {
 
       
     } else if(m_bPowerPortTargeting) {
-      this.PowerPortTargetDrive(dvalueLYAxis, dvalueRYAxis, dvalueLXAxis, dvalueRXAxis);
+     this.PowerPortTargetDrive(dvalueLYAxis, dvalueRYAxis, dvalueLXAxis, dvalueRXAxis);
     }else{
-      this.PowerCellTargetDrive(dvalueLYAxis, dvalueRYAxis, dvalueLXAxis, dvalueRXAxis);
+    //this.PowerCellTargetDrive(0.2, dvalueRYAxis, dvalueLXAxis, dvalueRXAxis);
     }
 
     //r.m_LEDs.setColor(m_LEDColor);
@@ -213,7 +214,7 @@ public class Drive extends SubsystemBase {
 
         // Turn left?
         if (targetAngle < 0) dvalueLYAxis = 0;
-
+        TheRobot.log("PowerPortTargetDrive: kDriveStyle_tank");
         m_differentialDrive.tankDrive(dvalueLYAxis, dvalueRYAxis);
       } break;
       case Drive.kDriveStyle_arcade2:
@@ -225,15 +226,17 @@ public class Drive extends SubsystemBase {
         steer = targetAngle/45.0;
         if (steer > 1.0) steer = 1.0;
         if (steer < -1.0) steer = -1.0;
+        TheRobot.log("PPortSpeed: " + TheRobot.toString(dvalueLYAxis) 
+        + " Steer: " + TheRobot.toString(steer));
         m_differentialDrive.arcadeDrive(dvalueLYAxis, steer, true);
         break;
     }
   }
 
-  private void PowerCellTargetDrive(double dvalueLYAxis, double dvalueRYAxis, double dvalueLXAxis, double dvalueRXAxis) {
+  public void PowerCellTargetDrive(double dvalueLYAxis, double dvalueRYAxis, double dvalueLXAxis, double dvalueRXAxis) {
     Robot r = TheRobot.getInstance();
     double targetAngle = r.m_PCTargeter.getPowerCellAngle();
-    double dFrame = r.m_PCTargeter.getPowerCellAngle();
+    double dFrame = r.m_PCTargeter.getPowerCellFrameCounter();
 
     if (true) {
     TheRobot.log("Frame: " +df3.format(dFrame) +
@@ -261,6 +264,7 @@ public class Drive extends SubsystemBase {
 
         // Turn left?
         if (targetAngle < 0) dvalueLYAxis = 0;
+        TheRobot.log("PowerCellTargetDrive: kDriveStyle_tank");
 
         m_differentialDrive.tankDrive(dvalueLYAxis, dvalueRYAxis);
       } break;
@@ -273,7 +277,15 @@ public class Drive extends SubsystemBase {
         steer = targetAngle/45.0;
         if (steer > 1.0) steer = 1.0;
         if (steer < -1.0) steer = -1.0;
-        m_differentialDrive.arcadeDrive(dvalueLYAxis, steer);
+
+        if(Math.abs(steer) > 0.1){
+          if(steer > 0) dvalueLYAxis = 0;
+          if(steer < 0) dvalueRYAxis = 0;
+        }
+
+        TheRobot.log("PCSpeed: " + TheRobot.toString(dvalueLYAxis) 
+            + " Steer: " + TheRobot.toString(steer));
+        NudgeDrive(dvalueLYAxis, dvalueRYAxis);//.arcadeDrive(dvalueLYAxis, steer, true);
         break;
     }
   }
@@ -285,6 +297,7 @@ public class Drive extends SubsystemBase {
     double steer = targetAngle/45.0;
 
     if (Math.abs(targetAngle) <= m_dTargetSpinDeadZone){
+      TheRobot.log("Spin Speed stopped.");
       m_differentialDrive.arcadeDrive(0, 0, false);
       steer = 0;
       SmartDashboard.putNumber("Targeting/Spin Steer", steer);
@@ -318,6 +331,8 @@ public class Drive extends SubsystemBase {
       dNudge = Math.abs(m_dTargetMinPower)/2.0;
     }
 
+    TheRobot.log("Spin Speed: " + TheRobot.toString(-dNudge) 
+    + " Steer: " + TheRobot.toString(steer));
     m_differentialDrive.arcadeDrive(-dNudge, steer, false);
     SmartDashboard.putNumber("Targeting/Spin Steer", steer);
   }
@@ -329,15 +344,21 @@ public class Drive extends SubsystemBase {
 
     switch (m_DriveStyle) {
       case Drive.kDriveStyle_tank:
+      TheRobot.log("JustDrive: kDriveStyle_tank");
         m_differentialDrive.tankDrive(dvalueLYAxis, dvalueRYAxis);
         break;
       case Drive.kDriveStyle_arcade1:
+      TheRobot.log("JustDrive: kDriveStyle_arcade1");
         m_differentialDrive.arcadeDrive(dvalueLYAxis, dvalueLXAxis);
         break;
       case Drive.kDriveStyle_arcade2:
+        TheRobot.log("JustDrive: kDriveStyle_arcade2");
+
         m_differentialDrive.arcadeDrive(dvalueRYAxis, dvalueLXAxis);
         break;
       case Drive.kDriveStyle_arcade3:
+      TheRobot.log("Speed: " + TheRobot.toString(dvalueLYAxis) 
+            + " Steer: " + TheRobot.toString(dvalueRXAxis));
         m_differentialDrive.arcadeDrive(dvalueLYAxis, dvalueRXAxis, true);
         break;
     }
@@ -345,7 +366,7 @@ public class Drive extends SubsystemBase {
 
   public void moveAtVelocity(double LeftVelocity, double RightVelocity)
   {
-    //TheRobot.log("Auto Velocities" + TheRobot.toString(LeftVelocity));
+    TheRobot.log("Auto Velocities" + TheRobot.toString(LeftVelocity));
     m_differentialDrive.arcadeDrive(LeftVelocity, 0);
     //m_differentialDrive.tankDrive(LeftVelocity, RightVelocity);
     //JustDrive(LeftVelocity, 0, 0, 0);
@@ -406,6 +427,9 @@ public double getRightEncoderPosition()
   */
 
   public void NudgeDrive(double left, double right) {
-    m_differentialDrive.tankDrive(left, right);
+    //m_differentialDrive.tankDrive(left, right);
+    TheRobot.log("NudgeDrive.");
+    m_leftMotor.set(left);
+    m_rightMotor.set(-right);
   }
 }

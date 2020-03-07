@@ -31,11 +31,11 @@ import frc.robot.subsystems.Stick;
 import frc.robot.subsystems.LEDController;
 import frc.robot.subsystems.Hood;
 import frc.robot.auto.AutoTarget;
+import frc.robot.auto.ConsumePowerCell;
 import frc.robot.auto.DriveStraight;
 import frc.robot.auto.DriveStriaghtWEncoders;
+import frc.robot.auto.DriveToPowerCell;
 import frc.robot.commands.*;
-
-
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -65,7 +65,6 @@ public class Robot extends TimedRobot {
 
   private final Timer m_timer = new Timer();
   private Stick m_DriverStick = null;
- 
 
   public Robot() {
     TheRobot.SetInstance(this);
@@ -76,12 +75,11 @@ public class Robot extends TimedRobot {
    * for any initialization code.
    */
   @Override
-  public void robotInit() 
-  {
+  public void robotInit() {
     TheRobot.log("robotInit.");
 
     m_climber = new Climber();
-    m_controlPanel = new ControlPanel(); 
+    m_controlPanel = new ControlPanel();
     m_drive = new Drive();
     m_intake = new Intake();
     m_indexer = new Indexer();
@@ -89,7 +87,6 @@ public class Robot extends TimedRobot {
     m_hood = new Hood();
     m_PCTargeter = new PowerCellTargeter();
     m_LEDs = new LEDController();
-
 
     // Setup the singleton for easy access to the robot and subsystems
     m_robotContainer = new RobotContainer();
@@ -99,39 +96,40 @@ public class Robot extends TimedRobot {
     m_CMDScheduler = CommandScheduler.getInstance();
 
     // initialize the subsystems
-  
+
     // add commands to Dashboard
     CommandBase c;
-    SmartDashboard.putData("Commands/Shoot!", new Shoot(m_indexer));
-    SmartDashboard.putData("Commands/Retract Intake!", new RetractIntake());    
+    SmartDashboard.putData("Commands/Shoot!", new Shoot(m_indexer, m_shooter));
+    SmartDashboard.putData("Commands/Retract Intake!", new RetractIntake());
     SmartDashboard.putData("Commands/Extend Intake!", new ExtendIntake(m_indexer));
     SmartDashboard.putData("Commands/Indexer/CheckForNewPC!", new IndexerCheckForNewPowerCell(m_indexer));
     SmartDashboard.putData("Commands/Indexer/IndexNewPC!", new IndexNewPowerCell());
     SmartDashboard.putData("Commands/Indexer/CompactIndexer!", new CompactIndexer(m_indexer));
     SmartDashboard.putData("Commands/Indexer/CompactShooter!", new CompactShooter().withTimeout(0.2));
 
+    SmartDashboard.putData("Commands/PC/ConsumePowerCell!", new ConsumePowerCell(m_drive, -0.2).withTimeout(1.0));
+    SmartDashboard.putData("Commands/PC/DriveToPowerCell!", new DriveToPowerCell(m_drive, -0.2).withTimeout(3.0));
+
     SmartDashboard.putNumber("Auto/Move Distance", 0.0);
 
-    /* 
+    /*
      *
-     * Begin autonomous setup of commands 
+     * Begin autonomous setup of commands
      * 
      */
-    SmartDashboard.getEntry("Auto Mode/Selector").setString("0");  //SendableChooser for autocommand
+    SmartDashboard.getEntry("Auto Mode/Selector").setString("0"); // SendableChooser for autocommand
 
-    /* 
+    /*
      * End autonomous command groups
      * 
      */
 
-    c = new SequentialCommandGroup(
-      new AutoTarget(m_drive).withTimeout(3.0),
-      new Shoot(m_indexer).withTimeout(5.0)
-    );
+    c = new SequentialCommandGroup(new AutoTarget(m_drive).withTimeout(3.0),
+        new Shoot(m_indexer, m_shooter).withTimeout(5.0));
 
     c.setName("Auto Target & Shoot");
     SmartDashboard.putData("Commands/Auto/Auto Target & Shoot!", c);
-    
+
     c = new ReverseCompactIndexer(m_indexer).withTimeout(0.5);
     c.setName("Reverse Compact");
     SmartDashboard.putData("Commands/Indexer/RevCompactIndexer!", c);
@@ -140,23 +138,15 @@ public class Robot extends TimedRobot {
     c.setName("Rumble");
     SmartDashboard.putData("Commands/Rumble !", c);
 
-    c = new ParallelRaceGroup(
-      new ClearIndexer(m_indexer).withTimeout(0.1),
-      new CompactShooter().withTimeout(0.1)
-    );
+    c = new ParallelRaceGroup(new ClearIndexer(m_indexer).withTimeout(0.1), new CompactShooter().withTimeout(0.1));
     c.setName("Prepare to Shoot!");
-    SmartDashboard.putData("Commands/Shooter/Prepare!", c); 
+    SmartDashboard.putData("Commands/Shooter/Prepare!", c);
 
-    c = new SequentialCommandGroup(
-      new RetractIntake(), 
-      new WaitCommand(0.25), 
-      new ExtendIntake(m_indexer),
-      new CompactIndexer(m_indexer),
-      new WaitCommand(0.25)
-      );
+    c = new SequentialCommandGroup(new RetractIntake(), new WaitCommand(0.25), new ExtendIntake(m_indexer),
+        new CompactIndexer(m_indexer), new WaitCommand(0.25));
 
-      c.setName("Smash & Compact");
-      SmartDashboard.putData("Commands/Indexer/Smash & Compact!", c); 
+    c.setName("Smash & Compact");
+    SmartDashboard.putData("Commands/Indexer/Smash & Compact!", c);
 
     // 1 meter, 0.2 power
     c = new DriveStriaghtWEncoders(m_drive, 1, .2).withTimeout(2);
@@ -172,47 +162,53 @@ public class Robot extends TimedRobot {
     m_timer.reset();
     m_timer.start();
 
-    
     double autoMoveDistance = SmartDashboard.getNumber("Auto/Move Distance", 0.0);
     // the distance to move with the appriate auto command
     String s = SmartDashboard.getEntry("Auto Mode/Selector").getString("0");// the automode to use
-    
-    TheRobot.log("Autonomous Mode: " +s);
-    
+
+    TheRobot.log("Autonomous Mode: " + s);
+
     CommandBase c = null;
     switch (s) {
 
-      case "0":
-        /*
-        * Aim & Shoot!
-        */
-        c = new SequentialCommandGroup(
-        new AutoTarget(m_drive).withTimeout(3.0),
-        new Shoot(m_indexer).withTimeout(5.0)
-        );
+    case "0":
+      /*
+       * Aim & Shoot!
+       */
+      c = new SequentialCommandGroup(new AutoTarget(m_drive).withTimeout(3.0),
+          new Shoot(m_indexer, m_shooter).withTimeout(5.0));
       break;
-      case "1":
-        /*
-        * Aim, Shoot & Drive Forward 1m
-        */
-        c = new SequentialCommandGroup(
-          new AutoTarget(m_drive).withTimeout(3.0),
-          new Shoot(m_indexer).withTimeout(5.0),
-          new DriveStraight(1.0, 0.5)
-        );
+    case "1":
+      /*
+       * Aim, Shoot & Drive Forward 1m
+       */
+      c = new SequentialCommandGroup(new AutoTarget(m_drive).withTimeout(3.0),
+          new Shoot(m_indexer, m_shooter).withTimeout(5.0), new DriveStraight(1.0, 0.5));
       break;
-      case "2":
-        /*
-        * Aim, Shoot & Drive Backward 1m
-        */
-        c = new SequentialCommandGroup(
-        new AutoTarget(m_drive).withTimeout(3.0),
-        new Shoot(m_indexer).withTimeout(5.0),
-        new DriveStraight(1.0, -0.5)
-        );
+    case "2":
+      /*
+       * Aim, Shoot & Drive Backward 1m
+       */
+      c = new SequentialCommandGroup(new AutoTarget(m_drive).withTimeout(3.0),
+          new Shoot(m_indexer, m_shooter).withTimeout(5.0), new DriveStraight(1.0, -0.5));
       break;
-      case "3":
-      default:
+    case "3":
+      /*
+       * Aim, Shoot then chase PowerCells
+       */
+      c = new SequentialCommandGroup(new AutoTarget(m_drive).withTimeout(3.0),
+          new Shoot(m_indexer, m_shooter).withTimeout(5.0), new DriveToPowerCell(m_drive, -0.2),
+          new ConsumePowerCell(m_drive, -0.2).withTimeout(3.0));
+    case "4":
+      /*
+       * Test
+       */
+      c = new SequentialCommandGroup(new DriveToPowerCell(m_drive, -0.4).withTimeout(5.0),
+          new ConsumePowerCell(m_drive, -0.2).withTimeout(0.5), new DriveToPowerCell(m_drive, -0.4).withTimeout(5.0),
+          new ConsumePowerCell(m_drive, -0.2).withTimeout(0.5), new DriveToPowerCell(m_drive, -0.4).withTimeout(5.0),
+          new ConsumePowerCell(m_drive, -0.2).withTimeout(0.5));
+    case "5":
+    default:
     }
 
     if (c != null) {
@@ -226,7 +222,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousPeriodic() {
- 
+
   }
 
   /**
@@ -234,9 +230,8 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopInit() {
-    
-    if(m_autonomousCommand != null)
-    {
+
+    if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
   }
@@ -249,68 +244,44 @@ public class Robot extends TimedRobot {
 
     // call the periodic methods on all of the subsystems
     /*
-    m_climber.periodic();
-    m_controlPanel.periodic();
-    m_drive.periodic();
-    m_indexer.periodic();
-    m_shooter.periodic();
-    m_OI.periodic();
-    m_hood.periodic();
-    m_intake.periodic();
-    */
-
+     * m_climber.periodic(); m_controlPanel.periodic(); m_drive.periodic();
+     * m_indexer.periodic(); m_shooter.periodic(); m_OI.periodic();
+     * m_hood.periodic(); m_intake.periodic();
+     */
 
     if (true)
       return;
 
     // sample/test code below
 
-    //m_robotDrive.arcadeDrive(m_stick.getY(), m_stick.getX());
+    // m_robotDrive.arcadeDrive(m_stick.getY(), m_stick.getX());
 
     // right trigger to spin forward
     /*
-    double dValueLeft = m_stick.getRawAxis(2);
-    double dValueRight = m_stick.getRawAxis(3);
-    if (dValueRight != 0) {
-      System.out.println("Right Trigger Value: " + Double.toString(dValueRight));
-    }
+     * double dValueLeft = m_stick.getRawAxis(2); double dValueRight =
+     * m_stick.getRawAxis(3); if (dValueRight != 0) {
+     * System.out.println("Right Trigger Value: " + Double.toString(dValueRight)); }
+     * 
+     * if (dValueRight > 0.25) { dValueRight = 0.25; }
+     * 
+     * 
+     * // left trigger to spin backwards if (dValueLeft != 0) {
+     * System.out.println("Left Trigger Value: " + Double.toString(dValueLeft)); }
+     * 
+     * if (dValueLeft > 0.25) { dValueLeft = 0.25; } if (dValueLeft > 0.0) {
+     * m_TestMotor.set(-dValueLeft); }
+     * 
+     * if (dValueRight > 0.0){ m_TestMotor.set(dValueRight); } else if (dValueLeft >
+     * 0) { m_TestMotor.set(-dValueLeft); } else { m_TestMotor.set(0); }
+     * 
+     * 
+     * /* System.out.println("Color Value: " + colorString);
+     * System.out.println("Red Value: " + Double.toString(detectedColor.red) +
+     * " Green Value: " + Double.toString(detectedColor.green) + " Blue Value: " +
+     * Double.toString(detectedColor.blue));
+     */
 
-    if (dValueRight > 0.25)
-    {
-      dValueRight = 0.25;
-    } 
-
-    
-    // left trigger to spin backwards
-    if (dValueLeft != 0) {
-      System.out.println("Left Trigger Value: " + Double.toString(dValueLeft));
-    }
-
-    if (dValueLeft > 0.25)
-    {
-      dValueLeft = 0.25;
-    }
-    if (dValueLeft > 0.0) {
-      m_TestMotor.set(-dValueLeft);
-    }
-
-    if (dValueRight > 0.0){
-      m_TestMotor.set(dValueRight);
-    } else if (dValueLeft > 0) {
-      m_TestMotor.set(-dValueLeft);
-    } else {
-      m_TestMotor.set(0);
-    }
-
-
-  /*
-  System.out.println("Color Value: " + colorString);
-  System.out.println("Red Value: " + Double.toString(detectedColor.red)
-                      + " Green Value: " + Double.toString(detectedColor.green)
-                      + " Blue Value: " + Double.toString(detectedColor.blue));
-  */                    
-  
-  //System.out.println("Ultrasonic: " + ultrasonic0.getValue());
+    // System.out.println("Ultrasonic: " + ultrasonic0.getValue());
 
   }
 

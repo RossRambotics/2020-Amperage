@@ -48,6 +48,7 @@ public class Shooter extends SubsystemBase {
 
   private boolean m_bReadyToShoot = false;  // is the shooter ready? 
                                             // Here to prevent multiple  back ups
+  private ShooterValueSet m_LastTargetValues = new ShooterValueSet(10.0, 5000.0);
   
 
   /**
@@ -157,16 +158,25 @@ public class Shooter extends SubsystemBase {
     Robot r = TheRobot.getInstance();
  
     // get distance to target
-    ShooterValueSet m_values = m_lookUpTable.getCurrentValues(true);
-    System.out.println(m_values.shooterRPM);
+    ShooterValueSet values = m_lookUpTable.getCurrentValues(true);
+
+    // if the target is nolonger found use the last known good values
+    if (m_lookUpTable.isTargetFound()) {
+      // since we see the target save the values
+      m_LastTargetValues = values;
+    } else {
+      values = m_LastTargetValues;
+    }
+
+    System.out.println(values.shooterRPM);
     TheRobot.log("Target RPM: " 
-      + TheRobot.toString(m_values.shooterRPM.doubleValue())
+      + TheRobot.toString(values.shooterRPM.doubleValue())
       + " Target Hood: "
-      + TheRobot.toString(m_values.hoodAngle.doubleValue())
+      + TheRobot.toString(values.hoodAngle.doubleValue())
       );
 
     // tell shooter to come up to target speed based on distance  
-    if (r.m_shooter.ready(m_values)) {
+    if (r.m_shooter.ready(values)) {
       // start the indexer
       r.m_indexer.shoot();
     } else {

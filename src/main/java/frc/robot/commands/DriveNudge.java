@@ -8,6 +8,7 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.TheRobot;
 import frc.robot.subsystems.Drive;
 
 public class DriveNudge extends CommandBase {
@@ -27,20 +28,22 @@ public class DriveNudge extends CommandBase {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    m_drive.SetPowerPortTargeting(true);
+    m_drive.SetUseJoystick(false);
 
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
+    //TheRobot.log(TheRobot.toString(m_left));
     m_drive.NudgeDrive(m_left, m_right);
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    m_drive.SetPowerPortTargeting(false);
+    m_drive.SetUseJoystick(true);
+    m_drive.NudgeDrive(0, 0);
   }
 
   // Returns true when the command should end.

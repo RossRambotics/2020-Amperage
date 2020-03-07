@@ -10,8 +10,11 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Robot;
 import frc.robot.TheRobot;
+import frc.robot.helper.ShooterValueSet;
 
 public class Target extends CommandBase {
+  private SpinUpShooter m_SpinUpShooterCMD = null;
+
   /**
    * Creates a new Target.
    */
@@ -26,6 +29,10 @@ public class Target extends CommandBase {
     r.m_shooter.setLEDRing(true);
     r.m_drive.SetPowerPortTargeting(true);
     TheRobot.log("Starting Targeting.");
+
+    // TODO test this!
+    m_SpinUpShooterCMD = new SpinUpShooter(r.m_shooter);
+    m_SpinUpShooterCMD.schedule();
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -41,6 +48,7 @@ public class Target extends CommandBase {
     Robot r = TheRobot.getInstance();
     r.m_drive.SetPowerPortTargeting(false);
     r.m_shooter.setLEDRing(false);
+    m_SpinUpShooterCMD.cancel();
     TheRobot.log("Ending Targeting.");
   }
 

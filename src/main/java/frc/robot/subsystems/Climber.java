@@ -100,6 +100,7 @@ public class Climber extends SubsystemBase {
     m_LeftWinchMotor.setIdleMode(IdleMode.kBrake);
     m_RightWinchMotor.setIdleMode(IdleMode.kBrake);
     m_bBrakeModeEnabled = true;
+    SmartDashboard.putBoolean("Climber/Reset Lift Encoder", false);
 /*
     m_LLM_pidController = m_LeftLiftMotor.getPIDController();
     m_LRM_pidController = m_RightLiftMotor.getPIDController();
@@ -182,6 +183,12 @@ public class Climber extends SubsystemBase {
         m_LeftWinchMotor.setIdleMode(IdleMode.kCoast);
         m_RightWinchMotor.setIdleMode(IdleMode.kCoast);
       }
+    }
+
+    b = SmartDashboard.getBoolean("Climber/Reset Lift Encoder", false);
+    if (b) {
+      m_LLM_Encoder.setPosition(0.0);
+      m_LRM_Encoder.setPosition(0.0);
     }
 
     // This method will be called once per scheduler run

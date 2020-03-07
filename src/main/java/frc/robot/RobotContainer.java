@@ -56,7 +56,7 @@ public class RobotContainer {
     c = new SequentialCommandGroup(
         new ClearIndexer(r.m_indexer).withTimeout(0.05),
         new ReadyShooter(r.m_indexer).withTimeout(0.2),
-        new frc.robot.commands.Shoot(r.m_indexer).withTimeout(7.0));
+        new frc.robot.commands.Shoot(r.m_indexer, r.m_shooter).withTimeout(4.0));
     //c = new frc.robot.commands.Shoot(r.m_indexer).withTimeout(10.0);
 
     rightTrigger.whenPressed(c);
@@ -133,23 +133,24 @@ public class RobotContainer {
     /** 
      * Configure operator nudge commands to help with hanging
      */
-    double dNudge = 0.2;  // Nudge amount
+    double dNudgeTime = 0.2;  // Nudge time
+    double dNudgePower = 0.2; // Nudge motor power
 
     // Nudge forward
     POVButton operatorNudgeForward = new POVButton(m_OperatorStick, 0);
-    operatorNudgeForward.whenPressed(new DriveNudge(r.m_drive, 0.2, 0.2).withTimeout(dNudge));
+    operatorNudgeForward.whenPressed(new DriveNudge(r.m_drive, dNudgePower, dNudgePower).withTimeout(dNudgeTime));
 
     // Nudge backward
     POVButton operatorNudgeBackward = new POVButton(m_OperatorStick, 180);
-    operatorNudgeBackward.whenPressed(new DriveNudge(r.m_drive, -0.2, -0.2).withTimeout(dNudge));
+    operatorNudgeBackward.whenPressed(new DriveNudge(r.m_drive, -dNudgePower, -dNudgePower).withTimeout(dNudgeTime));
 
     // Nudge right back
     POVButton operatorNudgeRightBack = new POVButton(m_OperatorStick, 90);
-    operatorNudgeRightBack.whenPressed(new DriveNudge(r.m_drive, 0, -0.2).withTimeout(dNudge));
+    operatorNudgeRightBack.whenPressed(new DriveNudge(r.m_drive, 0, -dNudgePower).withTimeout(dNudgeTime));
 
     // Nudge left back
     POVButton operatorNudgeLeftBack = new POVButton(m_OperatorStick, 270);
-    operatorNudgeLeftBack.whenPressed(new DriveNudge(r.m_drive, -0.2, 0).withTimeout(dNudge));
+    operatorNudgeLeftBack.whenPressed(new DriveNudge(r.m_drive, -dNudgePower, 0).withTimeout(dNudgeTime));
   }
 
   public Joystick getDriverStick() {

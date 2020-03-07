@@ -5,65 +5,55 @@
 /* the project.                                                               */
 /*----------------------------------------------------------------------------*/
 
-package frc.robot.commands;
+package frc.robot.auto;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.Robot;
 import frc.robot.TheRobot;
-import frc.robot.subsystems.Shooter;
+import frc.robot.subsystems.Drive;
+import frc.robot.subsystems.PowerCellTargeter;
 
-public class Shoot extends CommandBase {
-
-  private boolean m_finished = false;
+public class ConsumePowerCell extends CommandBase {
   /**
-   * Creates a new Shoot.
+   * Creates a new DriveStraight.
    */
-  public Shoot(Subsystem indexer, Shooter shooter) {
-    // Use addRequirements() here to declare subsystem dependencies.
-    this.addRequirements(indexer);
-    this.addRequirements(shooter);
 
-}
+  private double m_velocity = 0;
+
+  public ConsumePowerCell(Drive drive, double velocity) {
+    // Use addRequirements() here to declare subsystem dependencies.
+    m_velocity = velocity;
+    TheRobot.log("Initailizing Drive To PowerCell");
+    Robot r = TheRobot.getInstance();
+    this.addRequirements(r.m_drive);
+  }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    TheRobot.log("Shoot Initializing...");
     Robot r = TheRobot.getInstance();
-    addRequirements(r.m_indexer);
-    addRequirements(r.m_shooter);
-    r.m_shooter.setLEDRing(true);
-    //r.m_CMDScheduler.schedule(new IntakeCapture(r.m_intake).withTimeout(5.0));
+    r.m_drive.SetUseJoystick(false);
+    r.m_intake.extend();
+    r.m_intake.capture();
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
     Robot r = TheRobot.getInstance();
-    r.m_shooter.setLEDRing(true);
-    r.m_shooter.shoot();
-    r.m_hood.extend();
+    r.m_drive.NudgeDrive(m_velocity, m_velocity);
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    if (interrupted) {
-      TheRobot.log("Shoot interrupted...");
-    } else {
-      TheRobot.log("Shoot ended...");
-    }
     Robot r = TheRobot.getInstance();
-    r.m_shooter.stop();
-    r.m_hood.retract();
-    r.m_indexer.stop();
-    r.m_shooter.setLEDRing(false);
+    r.m_drive.SetUseJoystick(true);
   }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return m_finished;
+    return false;
   }
 }
